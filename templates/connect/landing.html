@@ -1,113 +1,152 @@
 {% extends "connect/base.html" %}
 {% block content %}
-<div class="landing-page-container">
-
+<div class="landing-page">
   <section class="hero">
     <div class="hero-copy">
       <span class="eyebrow">Made only for GIM</span>
       <h1>Meet the mind.<br><em>Then meet the person.</em></h1>
-      <p class="lede">An intentional, anonymous-first way to connect with someone on campus. No profiles. No swiping. No audience.</p>
+      <p class="lede">An intentional, anonymous-first way to connect with someone on campus. No profiles. No swiping. No public pressure.</p>
       <div class="actions">
-        <a class="button" href="{% url 'signup' %}">Join with GIM email</a>
+        <a class="button hero-button" href="{% url 'signup' %}">Join with GIM email</a>
         <a class="text-link" href="#how">See how it works</a>
       </div>
       <div class="trust-row">
-        <span>GIM email verified</span><span>Text only</span><span>Mutual identity reveal</span>
+        <span>GIM email verified</span>
+        <span>Text only</span>
+        <span>Mutual identity reveal</span>
       </div>
     </div>
-    <div class="hero-visual">
-      <div class="orbit orbit-one"></div><div class="orbit orbit-two"></div>
-      <div class="anonymous-card card-a"><span class="avatar">A</span><strong>Anonymous connection</strong><small>“What made your day today?”</small></div>
-      <div class="anonymous-card card-b"><span class="avatar warm">?</span><strong>No profile to judge</strong><small>Just a conversation worth having.</small></div>
+
+    <div class="hero-visual" aria-hidden="true">
+      <div class="orbit orbit-one"></div>
+      <div class="orbit orbit-two"></div>
       <div class="spark"></div>
+      <div class="anonymous-card card-a">
+        <span class="avatar">A</span>
+        <strong>Anonymous connection</strong>
+        <small>"What made your day today?"</small>
+      </div>
+      <div class="anonymous-card card-b">
+        <span class="avatar warm">?</span>
+        <strong>No profile to judge</strong>
+        <small>Just a conversation worth having.</small>
+      </div>
     </div>
   </section>
 
-  <section class="section" id="how">
-    <div class="section-heading"><span class="eyebrow">How it works</span><h2>Less performance. More presence.</h2></div>
+  <section class="section intro-strip" id="how">
+    <div class="section-kicker">
+      <span class="eyebrow">How it works</span>
+      <h2>Less performance. More presence.</h2>
+    </div>
     <div class="feature-grid">
-      <article class="feature"><span class="feature-num">01</span><h3>Verify privately</h3><p>Use your institutional email and a verification selfie. Your photo stays private.</p></article>
-      <article class="feature"><span class="feature-num">02</span><h3>Connect intentionally</h3><p>Request a limited anonymous connection. No endless swipe loop, no public profile.</p></article>
-      <article class="feature"><span class="feature-num">03</span><h3>Reveal mutually</h3><p>When the conversation feels right, request a protected mutual identity reveal.</p></article>
+      <article class="feature elevated">
+        <span class="feature-num">01</span>
+        <h3>Verify privately</h3>
+        <p>Join with your institutional email and a verification selfie. Your photo stays private unless a reveal is completed.</p>
+      </article>
+      <article class="feature elevated">
+        <span class="feature-num">02</span>
+        <h3>Start anonymous</h3>
+        <p>Get matched into a text-only conversation. No searchable profile, no public photos, and no swipe marketplace.</p>
+      </article>
+      <article class="feature elevated">
+        <span class="feature-num">03</span>
+        <h3>Reveal when ready</h3>
+        <p>If the vibe feels right, request a mutual reveal. The reveal is deliberate, protected, and never forced.</p>
+      </article>
     </div>
   </section>
 
-  <section class="section band-blush split-section">
-    <div><span class="eyebrow">A calmer social space</span><h2>Your next connection starts without a photograph.</h2></div>
-    <div class="principles">
-      <p><strong>Anonymous by default.</strong> Identity stays private until the reveal flow completes.</p>
-      <p><strong>Built-in boundaries.</strong> Connection limits favor attention over volume.</p>
-      <p><strong>Campus accountable.</strong> Verified membership, reporting, blocking, and human review.</p>
+  <section class="section mood-section">
+    <div class="mood-copy">
+      <span class="eyebrow">Campus dating, softened</span>
+      <h2>Your next connection starts without a photograph.</h2>
+      <p>On a small campus, the fear is not distance. It is awkwardness. GIM Connect gives you a private first conversation before anyone has to carry that moment into the real world.</p>
+    </div>
+    <div class="phone-card" aria-label="Anonymous chat preview">
+      <div class="phone-top">
+        <span></span>
+        <strong>Anonymous chat</strong>
+        <span></span>
+      </div>
+      <div class="chat-preview">
+        <div class="chat-bubble theirs">What is one small thing you secretly love about campus?</div>
+        <div class="chat-bubble mine">Late evening walks after class. Everything feels quieter.</div>
+        <div class="chat-bubble theirs">That is oddly specific. I like it.</div>
+      </div>
+      <div class="typing-pill">Identity hidden until both people choose otherwise</div>
     </div>
   </section>
 
-  <section class="section" id="peace-of-mind">
-    <div class="section-heading">
+  <section class="section safety-section" id="safety">
+    <div class="section-kicker centered">
       <span class="eyebrow">Designed for peace of mind</span>
-      <h2>A safer space, built into the code.</h2>
-      <p class="lede">We threw out the standard dating app playbook to build a system where you're always in control of your visibility and your boundaries.</p>
+      <h2>Privacy is not a feature here. It is the foundation.</h2>
+      <p class="section-sub">Every product choice is meant to reduce social pressure, unwanted attention, and performative dating-app behavior.</p>
     </div>
-
-    <div class="feature-grid">
-      <article class="feature">
-        <span class="feature-num">🔒</span>
-        <h3>Zero creeping</h3>
-        <p>No profiles to swipe through, and no search bar. You're invisible to anyone you aren't actively talking to. All matching is randomized.</p>
+    <div class="safety-grid">
+      <article class="safety-card">
+        <span class="soft-icon">01</span>
+        <h3>Invisible until matched</h3>
+        <p>No one can browse you, search you, judge your photos, or find your profile. You exist only inside active conversations.</p>
       </article>
-
-      <article class="feature">
-        <span class="feature-num">👁️</span>
-        <h3>You see him first</h3>
-        <p>Before identities are fully revealed, women get a private, three-minute preview of his photo. If the vibe isn't right, cancel the reveal, no consequences.</p>
+      <article class="safety-card featured">
+        <span class="soft-icon">02</span>
+        <h3>She sees him first</h3>
+        <p>Before identities are fully revealed, women get a private 3-minute preview of his photo and can cancel without consequence.</p>
       </article>
-
-      <article class="feature">
-        <span class="feature-num">💬</span>
-        <h3>No spam. Strictly text.</h3>
-        <p>Limits on active chats mean every connection takes real effort. Our chat is text-only, so there are never any unwanted pictures.</p>
+      <article class="safety-card">
+        <span class="soft-icon">03</span>
+        <h3>Text-only by design</h3>
+        <p>No unsolicited images, no media spam, and strict limits on active chats so each connection has to be intentional.</p>
       </article>
     </div>
   </section>
 
-  <section class="cta-panel"><span class="eyebrow light">The first message is the profile</span><h2>Ready to say hello?</h2><a class="button light-button" href="{% url 'signup' %}">Create your account</a></section>
-
-</div>
-{% endblock %}    <div class="principles">
-      <p><strong>Anonymous by default.</strong> Identity stays private until the reveal flow completes.</p>
-      <p><strong>Built-in boundaries.</strong> Connection limits favor attention over volume.</p>
-      <p><strong>Campus accountable.</strong> Verified membership, reporting, blocking, and human review.</p>
+  <section class="section reveal-section">
+    <div class="reveal-panel-copy">
+      <span class="eyebrow">The reveal moment</span>
+      <h2>A little suspense, with real boundaries.</h2>
+      <p>The identity reveal is not a flashy trick. It is a consent moment. Either person can ask, both people must participate, and the final step gives women one protected safety check.</p>
+      <a class="button secondary" href="{% url 'signup' %}">Start safely</a>
+    </div>
+    <div class="reveal-flow">
+      <div class="flow-card">
+        <span>Step 1</span>
+        <strong>Request reveal</strong>
+        <p>Someone feels the conversation is ready.</p>
+      </div>
+      <div class="flow-card">
+        <span>Step 2</span>
+        <strong>Partner accepts</strong>
+        <p>No acceptance, no reveal. The chat simply continues.</p>
+      </div>
+      <div class="flow-card final">
+        <span>Step 3</span>
+        <strong>3-minute photo window</strong>
+        <p>She confirms, rejects, or lets the reveal proceed automatically.</p>
+      </div>
     </div>
   </section>
 
-  <section class="section" id="peace-of-mind">
-    <div class="section-heading">
-      <span class="eyebrow">Designed for Peace of Mind</span>
-      <h2>A safer space, built into the code.</h2>
-      <p class="lede">We threw out the standard dating app playbook to build a system where you are always in control of your visibility and your boundaries.</p>
-    </div>
-    
-    <div class="feature-grid">
-      <article class="feature">
-        <span class="feature-num">🔒</span>
-        <h3>Zero Creeping</h3>
-        <p>No profiles to swipe through, and no search bar. You are completely invisible to anyone you aren't actively talking to. All matching is randomized.</p>
-      </article>
-      
-      <article class="feature">
-        <span class="feature-num">👁️</span>
-        <h3>You see him first.</h3>
-        <p>Before identities are fully revealed, women get a private, 3-minute preview of his photo. If the vibe isn't right, you can cancel the reveal consequence-free.</p>
-      </article>
-      
-      <article class="feature">
-        <span class="feature-num">💬</span>
-        <h3>No Spam. Strictly Text.</h3>
-        <p>Limits on how many active chats someone can have means every connection takes real effort. Plus, our chat is text-only—no unwanted pictures, ever.</p>
-      </article>
+  <section class="section contrast-section">
+    <div class="contrast-card">
+      <span class="eyebrow">Not another swipe app</span>
+      <h2>The first message is the profile.</h2>
+      <div class="contrast-list">
+        <p><strong>No public profiles.</strong> You are not performing for the whole campus.</p>
+        <p><strong>No hot-or-not feed.</strong> Attention goes into one conversation, not endless comparison.</p>
+        <p><strong>No identity pressure.</strong> Names and photos arrive only after a protected mutual flow.</p>
+      </div>
     </div>
   </section>
 
-  <section class="cta-panel"><span class="eyebrow light">The first message is the profile</span><h2>Ready to say hello?</h2><a class="button light-button" href="{% url 'signup' %}">Create your account</a></section>
-
+  <section class="cta-panel">
+    <span class="eyebrow light">A private hello can become something real</span>
+    <h2>Ready to meet someone differently?</h2>
+    <p>Join the campus pool, verify once, and start with the part that actually matters: a conversation.</p>
+    <a class="button light-button" href="{% url 'signup' %}">Create your account</a>
+  </section>
 </div>
 {% endblock %}
