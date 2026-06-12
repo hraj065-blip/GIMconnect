@@ -1,6 +1,7 @@
 {% extends "connect/base.html" %}
 {% block content %}
 <div class="landing-page-container">
+
   <section class="hero">
     <div class="hero-copy">
       <span class="eyebrow">Made only for GIM</span>
@@ -35,6 +36,43 @@
     <div><span class="eyebrow">A calmer social space</span><h2>Your next connection starts without a photograph.</h2></div>
     <div class="principles">
       <p><strong>Anonymous by default.</strong> Identity stays private until the reveal flow completes.</p>
+      <p><strong>Built-in boundaries.</strong> Connection limits favor attention over volume.</p>
+      <p><strong>Campus accountable.</strong> Verified membership, reporting, blocking, and human review.</p>
+    </div>
+  </section>
+
+  <section class="section" id="peace-of-mind">
+    <div class="section-heading">
+      <span class="eyebrow">Designed for Peace of Mind</span>
+      <h2>A safer space, built into the code.</h2>
+      <p class="lede">We threw out the standard dating app playbook to build a system where you are always in control of your visibility and your boundaries.</p>
+    </div>
+    
+    <div class="feature-grid">
+      <article class="feature">
+        <span class="feature-num">🔒</span>
+        <h3>Zero Creeping</h3>
+        <p>No profiles to swipe through, and no search bar. You are completely invisible to anyone you aren't actively talking to. All matching is randomized.</p>
+      </article>
+      
+      <article class="feature">
+        <span class="feature-num">👁️</span>
+        <h3>You see him first.</h3>
+        <p>Before identities are fully revealed, women get a private, 3-minute preview of his photo. If the vibe isn't right, you can cancel the reveal consequence-free.</p>
+      </article>
+      
+      <article class="feature">
+        <span class="feature-num">💬</span>
+        <h3>No Spam. Strictly Text.</h3>
+        <p>Limits on how many active chats someone can have means every connection takes real effort. Plus, our chat is text-only—no unwanted pictures, ever.</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="cta-panel"><span class="eyebrow light">The first message is the profile</span><h2>Ready to say hello?</h2><a class="button light-button" href="{% url 'signup' %}">Create your account</a></section>
+
+</div>
+{% endblock %}      <p><strong>Anonymous by default.</strong> Identity stays private until the reveal flow completes.</p>
       <p><strong>Built-in boundaries.</strong> Connection limits favor attention over volume.</p>
       <p><strong>Campus accountable.</strong> Verified membership, reporting, blocking, and human review.</p>
     </div>
