@@ -1,0 +1,15 @@
+{% extends "connect/base.html" %}
+{% block title %}Join GIM Connect{% endblock %}
+{% block content %}
+<section class="auth-shell">
+  <div class="auth-intro"><span class="eyebrow">Private campus access</span><h1>Start anonymous.<br>Stay intentional.</h1><p>Your verification selfie is reviewed privately and never shown before a formal reveal.</p></div>
+  <div class="form-card">
+    <h2>Create your account</h2><p class="muted">Use your official GIM email.</p>
+    <form method="post" enctype="multipart/form-data" class="stack-form">
+      {% csrf_token %}{{ form.as_p }}
+      <button class="button full" type="submit">Send verification code</button>
+    </form>
+    <p class="form-foot">Already joined? <a href="{% url 'login' %}">Log in</a></p>
+  </div>
+</section>
+{% endblock %}

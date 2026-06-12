@@ -1,0 +1,53 @@
+{% extends "connect/base.html" %}
+{% block title %}Your connections{% endblock %}
+{% block content %}
+<section class="app-shell">
+  <div class="dashboard-head">
+    <div><span class="eyebrow">Your private corner</span><h1>Hello, {{ user.display_name }}.</h1><p class="muted">You have {{ active_count }} of {{ user.connection_cap }} active connection{{ active_count|pluralize }}.</p></div>
+    <div class="status-pill {% if user.is_eligible %}ready{% endif %}">{% if user.is_eligible %}Ready to connect{% else %}Verification pending{% endif %}</div>
+  </div>
+
+  {% if not user.email_verified or user.photo_status != "approved" or not user.onboarding_complete %}
+    <div class="verification-panel">
+      <div><span class="eyebrow">Account setup</span><h2>Complete verification to enter the pool.</h2></div>
+      <div class="check-list">
+        <span class="{% if user.email_verified %}done{% endif %}">Email verified</span>
+        <span class="{% if user.photo_status == 'approved' %}done{% endif %}">Photo approved</span>
+        <span class="{% if user.onboarding_complete %}done{% endif %}">Guidelines accepted</span>
+      </div>
+      {% if not user.onboarding_complete %}<a class="button small" href="{% url 'onboarding' %}">Finish onboarding</a>{% endif %}
+    </div>
+  {% else %}
+    <div class="request-panel">
+      {% if waiting_request %}
+        <div><span class="pulse"></span><strong>Looking for the right open spot</strong><p>Your lobby request expires and is refunded at {{ waiting_request.expires_at|date:"g:i A, M j" }}.</p></div>
+        <form method="post" action="{% url 'cancel_request' waiting_request.pk %}">{% csrf_token %}<button class="button secondary">Cancel request</button></form>
+      {% else %}
+        {% if can_request %}
+          <div><strong>Open a new conversation</strong><p>One intentional request. We will connect you when a compatible spot is available.</p></div>
+          <form method="post" action="{% url 'new_request' %}">{% csrf_token %}<button class="button">Request connection</button></form>
+        {% elif active_count >= user.connection_cap %}
+          <div><strong>Your connection spaces are full</strong><p>When one conversation ends, your next request window can begin.</p></div>
+        {% else %}
+          <div><strong>Your next request is resting</strong><p>The rolling window opens again at {{ user.request_available_at|date:"g:i A, M j" }}.</p></div>
+        {% endif %}
+      {% endif %}
+    </div>
+  {% endif %}
+
+  <div class="section-title"><h2>Active connections</h2><span>{{ active_count }} open</span></div>
+  <div class="connection-grid">
+    {% for connection in active_connections %}
+      <a class="connection-card" href="{% url 'chat' connection.pk %}">
+        <div class="anonymous-orb">{% if connection.identities_revealed %}{% if user == connection.man %}{{ connection.woman.display_name|first }}{% else %}{{ connection.man.display_name|first }}{% endif %}{% else %}?{% endif %}</div>
+        <div><strong>{% if connection.identities_revealed %}{% if user == connection.man %}{{ connection.woman.display_name }}{% else %}{{ connection.man.display_name }}{% endif %}{% else %}Anonymous connection{% endif %}</strong><p>{{ connection.chat_messages.last.body|default:"A fresh conversation is waiting."|truncatechars:52 }}</p></div>
+        <span class="chevron">›</span>
+      </a>
+    {% empty %}
+      <div class="empty-state"><div class="empty-rings"></div><h3>No active conversations yet</h3><p>Your next good conversation can start quietly.</p></div>
+    {% endfor %}
+  </div>
+
+  {% if history %}<div class="section-title"><h2>Recent history</h2></div><div class="history-list">{% for connection in history %}<a href="{% url 'chat' connection.pk %}"><span>This connection has ended</span><time>{{ connection.ended_at|date:"M j" }}</time></a>{% endfor %}</div>{% endif %}
+</section>
+{% endblock %}

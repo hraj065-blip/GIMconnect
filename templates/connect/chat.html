@@ -1,0 +1,53 @@
+{% extends "connect/base.html" %}
+{% block title %}Conversation{% endblock %}
+{% block content %}
+<section class="chat-shell">
+  <header class="chat-header">
+    <a class="back-link" href="{% url 'dashboard' %}">‹ Connections</a>
+    <div><strong>{% if connection.identities_revealed %}{{ other.display_name }}{% else %}Anonymous connection{% endif %}</strong><span>{% if connection.status == "active" %}Private text conversation{% else %}This connection has ended{% endif %}</span></div>
+    <details class="menu"><summary>•••</summary><div class="menu-pop">
+      <a href="{% url 'report' connection.pk %}">Report conversation</a>
+      <form method="post" action="{% url 'block_user' connection.pk %}">{% csrf_token %}<button>Block account</button></form>
+      {% if connection.status == "active" %}<form method="post" action="{% url 'end_chat' connection.pk %}">{% csrf_token %}<button>End connection</button></form>{% endif %}
+    </div></details>
+  </header>
+
+  {% if connection.identities_revealed %}
+    <div class="identity-banner">{% if other.photo %}<img src="{{ other.photo.url }}" alt="Revealed identity">{% endif %}<div><span class="eyebrow">Identity revealed</span><strong>{{ other.display_name }}</strong></div></div>
+  {% elif reveal %}
+    <div class="reveal-panel">
+      {% if reveal.status == "pending_partner" and reveal.requester != user %}
+        <div><strong>{{ reveal.requester|yesno:"A reveal was requested,A reveal was requested" }}</strong><p>Would you like to continue toward a mutual identity reveal?</p></div>
+        <div class="inline-actions"><form method="post" action="{% url 'reveal_response' reveal.pk 'reject' %}">{% csrf_token %}<button class="button secondary">Not now</button></form><form method="post" action="{% url 'reveal_response' reveal.pk 'accept' %}">{% csrf_token %}<button class="button">Accept</button></form></div>
+      {% elif reveal.status == "pending_partner" %}
+        <div><strong>Reveal request sent</strong><p>Waiting for your connection to respond.</p></div>
+      {% elif reveal.status == "awaiting_woman" and user == connection.woman %}
+        <div><strong>They accepted your reveal request</strong><p>Confirm that you are here and ready to begin your private photo review.</p></div>
+        <div class="inline-actions"><form method="post" action="{% url 'reveal_decide' reveal.pk 'reject' %}">{% csrf_token %}<button class="button secondary">Not now</button></form><form method="post" action="{% url 'reveal_reconfirm' reveal.pk %}">{% csrf_token %}<button class="button">I am ready</button></form></div>
+      {% elif reveal.status == "awaiting_woman" %}
+        <div><strong>Reveal accepted</strong><p>Waiting for her to reconfirm before the protected photo window opens.</p></div>
+      {% elif reveal.status == "window_open" and user == connection.woman %}
+        <div class="photo-review">{% if connection.man.photo %}<img src="{{ connection.man.photo.url }}" alt="Man's verification photo">{% else %}<div class="photo-placeholder">Photo unavailable in demo</div>{% endif %}<div><span class="eyebrow">Private photo review</span><strong>You have <span id="countdown" data-expires="{{ reveal.window_expires_at|date:'c' }}">3:00</span></strong><p>Confirm to reveal both identities now, reject to keep chatting anonymously, or take no action and the reveal will proceed automatically.</p><div class="inline-actions"><form method="post" action="{% url 'reveal_decide' reveal.pk 'reject' %}">{% csrf_token %}<button class="button secondary">Keep anonymous</button></form><form method="post" action="{% url 'reveal_decide' reveal.pk 'confirm' %}">{% csrf_token %}<button class="button">Confirm reveal</button></form></div></div></div>
+      {% else %}
+        <div><strong>Photo review in progress</strong><p>You will both see identities when the protected review window completes.</p></div>
+      {% endif %}
+    </div>
+  {% endif %}
+
+  <div class="messages" id="messages" data-last="{% if chat_messages %}{{ chat_messages.last.pk }}{% else %}0{% endif %}" data-url="{% url 'messages_json' connection.pk %}">
+    <div class="conversation-start"><span>Anonymous connection opened</span><p>Start with curiosity. Keep identifying details private until reveal.</p></div>
+    {% for item in chat_messages %}<div class="bubble-row {% if item.sender == user %}mine{% endif %}"><div class="bubble">{{ item.body }}<time>{{ item.created_at|date:"g:i A" }}</time></div></div>{% endfor %}
+  </div>
+
+  {% if connection.status == "active" %}
+  <div class="composer-wrap">
+    {% if not connection.identities_revealed and not reveal %}<form method="post" action="{% url 'reveal_start' connection.pk %}">{% csrf_token %}<button class="reveal-button">Request identity reveal</button></form>{% endif %}
+    <form method="post" action="{% url 'send_message' connection.pk %}" class="composer">{% csrf_token %}{{ form.body }}<button type="submit">Send</button></form>
+  </div>
+  {% else %}<div class="ended-banner">This connection has ended. The conversation is read-only.</div>{% endif %}
+</section>
+{% endblock %}
+{% block scripts %}<script>
+const list=document.querySelector('#messages'); if(list){list.scrollTop=list.scrollHeight;setInterval(async()=>{try{const r=await fetch(list.dataset.url+'?after='+list.dataset.last);const d=await r.json();d.messages.forEach(m=>{const row=document.createElement('div');row.className='bubble-row '+(m.mine?'mine':'');row.innerHTML='<div class="bubble"></div>';row.firstChild.append(document.createTextNode(m.body));row.firstChild.insertAdjacentHTML('beforeend','<time>'+m.time+'</time>');list.append(row);list.dataset.last=m.id;list.scrollTop=list.scrollHeight;});}catch(error){/* Navigation or a brief reconnect can interrupt polling. */}},4000);}
+const timer=document.querySelector('#countdown'); if(timer){setInterval(()=>{const left=Math.max(0,new Date(timer.dataset.expires)-new Date());const s=Math.floor(left/1000);timer.textContent=Math.floor(s/60)+':'+String(s%60).padStart(2,'0');if(!left) location.reload();},1000);}
+</script>{% endblock %}

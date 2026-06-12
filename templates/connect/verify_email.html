@@ -1,0 +1,9 @@
+{% extends "connect/base.html" %}
+{% block title %}Verify email{% endblock %}
+{% block content %}
+<section class="narrow-shell">
+  <div class="form-card centered"><span class="icon-disc">6</span><h1>Check your inbox</h1><p class="muted">Enter the code sent to <strong>{{ email }}</strong>. It expires in 10 minutes.</p>
+    <form method="post" class="stack-form">{% csrf_token %}{{ form.as_p }}<button class="button full">Verify email</button></form>
+  </div>
+</section>
+{% endblock %}

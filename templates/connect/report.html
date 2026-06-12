@@ -1,0 +1,3 @@
+{% extends "connect/base.html" %}
+{% block title %}Report conversation{% endblock %}
+{% block content %}<section class="narrow-shell"><div class="form-card"><span class="eyebrow">Safety report</span><h1>Tell us what happened.</h1><p class="muted">Severe safety concerns trigger an immediate temporary suspension and admin review.</p><form method="post" class="stack-form">{% csrf_token %}{{ form.as_p }}<button class="button full">Submit report</button></form></div></section>{% endblock %}

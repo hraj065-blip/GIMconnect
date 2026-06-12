@@ -1,0 +1,3 @@
+{% extends "connect/base.html" %}
+{% block title %}Settings{% endblock %}
+{% block content %}<section class="narrow-shell"><div class="form-card"><span class="eyebrow">Account</span><h1>Your settings</h1><div class="account-facts"><span><b>Email</b>{{ user.email }}</span><span><b>Verification</b>{{ user.get_photo_status_display }}</span></div><form method="post" class="stack-form">{% csrf_token %}{{ form.as_p }}<button class="button full">Save changes</button></form></div></section>{% endblock %}

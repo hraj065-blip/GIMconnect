@@ -1,0 +1,15 @@
+{% extends "connect/base.html" %}
+{% block title %}Before you begin{% endblock %}
+{% block content %}
+<section class="onboarding-shell">
+  <span class="eyebrow">Before your first connection</span><h1>A small space deserves clear expectations.</h1>
+  <div class="onboarding-grid">
+    <article class="info-card"><span>01</span><h3>Be kind while anonymous</h3><p>Anonymity protects vulnerability. It is never permission to disrespect someone.</p></article>
+    <article class="info-card"><span>02</span><h3>Respect a no</h3><p>Anyone can end a conversation or decline a reveal without explanation.</p></article>
+    <article class="info-card"><span>03</span><h3>Keep identity private</h3><p>Do not pressure anyone for identifying details before a mutual reveal.</p></article>
+    <article class="info-card"><span>04</span><h3>Know the reveal flow</h3><p>The woman always receives a protected three-minute photo review window before mutual reveal.</p></article>
+  </div>
+  {% if user.gender == "M" %}<div class="notice">When a reveal reaches the photo window, she sees your photo for three minutes and may decline. If she takes no action, the reveal proceeds automatically.</div>{% endif %}
+  <form method="post">{% csrf_token %}<button class="button">I understand and agree</button></form>
+</section>
+{% endblock %}
