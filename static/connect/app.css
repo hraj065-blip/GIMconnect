@@ -160,6 +160,7 @@ textarea.field-input { resize: vertical; }
 .account-facts { display: grid; gap: 8px; margin: 24px 0; }
 .account-facts span { display: flex; justify-content: space-between; padding: 12px; border-radius: 10px; background: var(--cream); color: var(--muted); font-size: 12px; }
 .account-facts b { color: var(--ink); }
+
 @media (max-width: 900px) {
   .site-header { padding: 0 18px; }
   .top-nav { gap: 12px; }
@@ -174,6 +175,7 @@ textarea.field-input { resize: vertical; }
   .feature-grid, .onboarding-grid, .connection-grid { grid-template-columns: 1fr; }
   .section { padding: 80px 0; }
 }
+
 @media (max-width: 600px) {
   .hero h1, .section h2, .cta-panel h2, .onboarding-shell h1 { letter-spacing: -2px; }
   .hero-visual { transform: scale(.82); margin: -40px; }
@@ -187,4 +189,27 @@ textarea.field-input { resize: vertical; }
   .photo-review { grid-template-columns: 1fr; }
   .photo-review img, .photo-placeholder { width: 100%; height: 220px; }
   .inline-actions { flex-wrap: wrap; }
+}
+
+/* --- NEW LANDING PAGE BACKGROUND --- */
+.landing-page-container {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+  overflow: hidden;
+}
+
+.landing-page-container::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url('gim-campus.png');
+  background-size: cover;
+  background-position: top center;
+  background-repeat: no-repeat;
+  opacity: 0.15;
+  z-index: -1;
 }
