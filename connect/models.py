@@ -29,7 +29,7 @@ class UserManager(BaseUserManager):
         extra_fields.setdefault("is_staff", True)
         extra_fields.setdefault("is_superuser", True)
         extra_fields.setdefault("email_verified", True)
-        extra_fields.setdefault("photo_status", User.PhotoStatus.APPROVED)
+        extra_fields.setdefault("photo_status", "approved")
         extra_fields.setdefault("onboarding_complete", True)
         if extra_fields.get("is_staff") is not True or extra_fields.get("is_superuser") is not True:
             raise ValueError("Superuser must have is_staff=True and is_superuser=True")
@@ -52,7 +52,9 @@ class User(AbstractUser):
     gender = models.CharField(max_length=1, choices=Gender.choices)
     photo = models.ImageField(upload_to="verification_photos/%Y/%m/", blank=True)
     email_verified = models.BooleanField(default=False)
-    photo_status = models.CharField(max_length=12, choices=PhotoStatus.choices, default=PhotoStatus.PENDING)
+    photo_status = models.CharField(
+        max_length=12, choices=PhotoStatus.choices, default=PhotoStatus.PENDING
+    )
     onboarding_complete = models.BooleanField(default=False)
     request_available_at = models.DateTimeField(default=timezone.now)
     suspended_until = models.DateTimeField(null=True, blank=True)
@@ -95,6 +97,9 @@ class EmailOTP(models.Model):
     expires_at = models.DateTimeField()
     used_at = models.DateTimeField(null=True, blank=True)
 
+    def __str__(self):
+        return f"OTP for {self.email}"
+
     @classmethod
     def issue(cls, email):
         return cls.objects.create(
@@ -115,20 +120,28 @@ class ConnectionRequest(models.Model):
         CANCELLED = "cancelled", "Cancelled"
         EXPIRED = "expired", "Expired and refunded"
 
-    requester = models.ForeignKey(User, on_delete=models.CASCADE, related_name="connection_requests")
-    status = models.CharField(max_length=12, choices=Status.choices, default=Status.QUEUED)
+    requester = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="connection_requests"
+    )
+    status = models.CharField(
+        max_length=12, choices=Status.choices, default=Status.QUEUED
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     expires_at = models.DateTimeField()
     ended_at = models.DateTimeField(null=True, blank=True)
     matched_connection = models.OneToOneField(
-        "Connection", on_delete=models.SET_NULL, null=True, blank=True, related_name="source_request"
+        "Connection",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="source_request",
     )
 
     class Meta:
         ordering = ["created_at"]
 
     def __str__(self):
-        return f"{self.requester} - {self.get_status_display()}"
+        return f"Request({self.requester} — {self.get_status_display()})"
 
 
 class Connection(models.Model):
@@ -137,14 +150,24 @@ class Connection(models.Model):
         ENDED = "ended", "Ended"
         EXPIRED = "expired", "Expired"
 
-    man = models.ForeignKey(User, on_delete=models.CASCADE, related_name="connections_as_man")
-    woman = models.ForeignKey(User, on_delete=models.CASCADE, related_name="connections_as_woman")
-    status = models.CharField(max_length=10, choices=Status.choices, default=Status.ACTIVE)
+    man = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="connections_as_man"
+    )
+    woman = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="connections_as_woman"
+    )
+    status = models.CharField(
+        max_length=10, choices=Status.choices, default=Status.ACTIVE
+    )
     established_at = models.DateTimeField(default=timezone.now)
     expires_at = models.DateTimeField()
     ended_at = models.DateTimeField(null=True, blank=True)
     ended_by = models.ForeignKey(
-        User, on_delete=models.SET_NULL, null=True, blank=True, related_name="ended_connections"
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="ended_connections",
     )
     identities_revealed = models.BooleanField(default=False)
     revealed_at = models.DateTimeField(null=True, blank=True)
@@ -160,7 +183,7 @@ class Connection(models.Model):
         ]
 
     def __str__(self):
-        return f"Connection {self.pk}: {self.man} / {self.woman}"
+        return f"Connection #{self.pk}: {self.man} / {self.woman} [{self.status}]"
 
     def other_user(self, user):
         return self.woman if user.pk == self.man_id else self.man
@@ -170,13 +193,20 @@ class Connection(models.Model):
 
 
 class Message(models.Model):
-    connection = models.ForeignKey(Connection, on_delete=models.CASCADE, related_name="chat_messages")
-    sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name="sent_messages")
+    connection = models.ForeignKey(
+        Connection, on_delete=models.CASCADE, related_name="chat_messages"
+    )
+    sender = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="sent_messages"
+    )
     body = models.TextField(validators=[MinLengthValidator(1)], max_length=2000)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         ordering = ["created_at"]
+
+    def __str__(self):
+        return f"Msg #{self.pk} in Connection #{self.connection_id} by {self.sender}"
 
 
 class RevealRequest(models.Model):
@@ -184,13 +214,21 @@ class RevealRequest(models.Model):
         PENDING_PARTNER = "pending_partner", "Waiting for partner"
         AWAITING_WOMAN = "awaiting_woman", "Waiting for woman to reconfirm"
         WINDOW_OPEN = "window_open", "Photo review window open"
-        REJECTED = "rejected", "Rejected"
+        # Partner explicitly declined before the window opened.
+        REJECTED = "rejected", "Rejected by partner"
+        # Woman cancelled during the 3-minute photo preview window.
+        CANCELLED = "cancelled", "Cancelled during photo window"
         REVEALED = "revealed", "Revealed"
-        CANCELLED = "cancelled", "Cancelled"
 
-    connection = models.ForeignKey(Connection, on_delete=models.CASCADE, related_name="reveal_requests")
-    requester = models.ForeignKey(User, on_delete=models.CASCADE, related_name="reveal_requests")
-    status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING_PARTNER)
+    connection = models.ForeignKey(
+        Connection, on_delete=models.CASCADE, related_name="reveal_requests"
+    )
+    requester = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="reveal_requests"
+    )
+    status = models.CharField(
+        max_length=20, choices=Status.choices, default=Status.PENDING_PARTNER
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     partner_responded_at = models.DateTimeField(null=True, blank=True)
     window_opened_at = models.DateTimeField(null=True, blank=True)
@@ -200,16 +238,28 @@ class RevealRequest(models.Model):
     class Meta:
         ordering = ["-created_at"]
 
+    def __str__(self):
+        return f"Reveal #{self.pk} on Connection #{self.connection_id} [{self.status}]"
+
 
 class Block(models.Model):
-    blocker = models.ForeignKey(User, on_delete=models.CASCADE, related_name="blocks_made")
-    blocked = models.ForeignKey(User, on_delete=models.CASCADE, related_name="blocks_received")
+    blocker = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="blocks_made"
+    )
+    blocked = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="blocks_received"
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         constraints = [
-            models.UniqueConstraint(fields=["blocker", "blocked"], name="unique_block_pair"),
+            models.UniqueConstraint(
+                fields=["blocker", "blocked"], name="unique_block_pair"
+            ),
         ]
+
+    def __str__(self):
+        return f"{self.blocker} blocked {self.blocked}"
 
 
 class Report(models.Model):
@@ -222,15 +272,30 @@ class Report(models.Model):
         REVIEWED = "reviewed", "Reviewed"
         DISMISSED = "dismissed", "Dismissed"
 
-    reporter = models.ForeignKey(User, on_delete=models.CASCADE, related_name="reports_made")
-    reported_user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="reports_received")
-    connection = models.ForeignKey(Connection, on_delete=models.SET_NULL, null=True, related_name="reports")
+    reporter = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="reports_made"
+    )
+    reported_user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="reports_received"
+    )
+    connection = models.ForeignKey(
+        Connection, on_delete=models.SET_NULL, null=True, related_name="reports"
+    )
     reason = models.TextField(max_length=2000)
-    severity = models.CharField(max_length=10, choices=Severity.choices, default=Severity.STANDARD)
-    status = models.CharField(max_length=10, choices=Status.choices, default=Status.OPEN)
+    severity = models.CharField(
+        max_length=10, choices=Severity.choices, default=Severity.STANDARD
+    )
+    status = models.CharField(
+        max_length=10, choices=Status.choices, default=Status.OPEN
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         constraints = [
-            models.UniqueConstraint(fields=["reporter", "connection"], name="one_report_per_connection"),
+            models.UniqueConstraint(
+                fields=["reporter", "connection"], name="one_report_per_connection"
+            ),
         ]
+
+    def __str__(self):
+        return f"Report #{self.pk}: {self.reporter} → {self.reported_user} [{self.severity}]"
