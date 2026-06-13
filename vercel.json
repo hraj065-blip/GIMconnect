@@ -1,17 +1,28 @@
 {
   "version": 2,
+  "buildCommand": "chmod +x build.sh && ./build.sh",
   "builds": [
     {
       "src": "gim_connect/wsgi.py",
       "use": "@vercel/python",
-      "config": { "maxDuration": 25 }
+      "config": {
+        "maxLambdaSize": "15mb",
+        "includeFiles": [
+          "gim_connect/**",
+          "connect/**",
+          "templates/**",
+          "staticfiles/**",
+          "manage.py"
+        ]
+      }
     }
   ],
+  "functions": {
+    "gim_connect/wsgi.py": {
+      "maxDuration": 25
+    }
+  },
   "routes": [
-    {
-      "src": "/static/(.*)",
-      "dest": "static/$1"
-    },
     {
       "src": "/(.*)",
       "dest": "gim_connect/wsgi.py"
