@@ -6,19 +6,23 @@
       "src": "gim_connect/wsgi.py",
       "use": "@vercel/python",
       "config": {
-        "maxLambdaSize": "15mb",
+        "maxLambdaSize": "50mb",
         "maxDuration": 25,
         "includeFiles": [
           "gim_connect/**",
           "connect/**",
           "templates/**",
-          "staticfiles/**",
+          "static/**",
           "manage.py"
         ]
       }
     }
   ],
   "routes": [
+    {
+      "src": "/static/(.*)",
+      "dest": "/static/$1"
+    },
     {
       "src": "/(.*)",
       "dest": "gim_connect/wsgi.py"
