@@ -23,10 +23,25 @@ def _blocked_pair(a, b):
 
 
 def _recently_connected(a, b, now):
+    """True if a and b had a connection that ended within the 7-day rematch cooldown."""
     return Connection.objects.filter(
         Q(man=a, woman=b) | Q(man=b, woman=a),
         status__in=[Connection.Status.ENDED, Connection.Status.EXPIRED],
         ended_at__gt=now - REMATCH_COOLDOWN,
+    ).exists()
+
+
+# ── BUG FIX (CRITICAL) ───────────────────────────────────────────────────────
+# The original code had no check for currently-active pairs. This allowed the
+# matching engine to connect the same man and woman a second time while their
+# first connection was still live, violating the spec ("exclude currently
+# connected pairs"). The test `test_same_pair_can_have_concurrent_connections`
+# was asserting this broken behaviour — that test has been corrected too.
+def _currently_connected(a, b):
+    """True if a and b already have an active connection together."""
+    return Connection.objects.filter(
+        Q(man=a, woman=b) | Q(man=b, woman=a),
+        status=Connection.Status.ACTIVE,
     ).exists()
 
 
@@ -61,15 +76,20 @@ def _eligible_candidates(requester, now):
         and not user.is_suspended
         and not _blocked_pair(requester, user)
         and not _recently_connected(requester, user, now)
+        and not _currently_connected(requester, user)   # ← critical fix
     ]
 
 
 def _ensure_can_request(user, now):
     if not user.is_eligible:
-        raise PermissionDenied("Complete verification and onboarding before requesting a connection.")
+        raise PermissionDenied(
+            "Complete verification and onboarding before requesting a connection."
+        )
     if active_count(user) >= user.connection_cap:
         raise ValidationError("You are already at your active connection limit.")
-    if ConnectionRequest.objects.filter(requester=user, status=ConnectionRequest.Status.QUEUED).exists():
+    if ConnectionRequest.objects.filter(
+        requester=user, status=ConnectionRequest.Status.QUEUED
+    ).exists():
         raise ValidationError("You already have a request waiting in the lobby.")
     if user.request_available_at > now:
         raise ValidationError("Your next outgoing request is not available yet.")
@@ -107,10 +127,14 @@ def establish_connection(a, b, now=None):
         established_at=now,
         expires_at=now + DAY,
     )
-    # A real connection starts the man's rolling 24-hour request window.
+    # Every new real connection (re)starts the man's rolling 24-hour request
+    # window. Only advance the timer — never push it backwards.
     if man.request_available_at < now + DAY:
         man.request_available_at = now + DAY
         man.save(update_fields=["request_available_at"])
+    # If the woman was the requester (a is the woman), start her outgoing-request
+    # timer too. If she received this connection (b is the woman), her timer is
+    # unaffected — she didn't spend a request slot.
     if a.gender == User.Gender.WOMAN:
         a.request_available_at = now + DAY
         a.save(update_fields=["request_available_at"])
@@ -120,17 +144,35 @@ def establish_connection(a, b, now=None):
 @transaction.atomic
 def end_connection(connection, ended_by=None, now=None, status=Connection.Status.ENDED):
     now = now or timezone.now()
-    connection = Connection.objects.select_for_update().select_related("man", "woman").get(pk=connection.pk)
+    connection = (
+        Connection.objects.select_for_update()
+        .select_related("man", "woman")
+        .get(pk=connection.pk)
+    )
     if connection.status != Connection.Status.ACTIVE:
         return connection
-    man_active_before = active_count(connection.man)
     connection.status = status
     connection.ended_at = now
     connection.ended_by = ended_by
     connection.save(update_fields=["status", "ended_at", "ended_by"])
-    if man_active_before >= connection.man.connection_cap and connection.man.request_available_at <= now:
-        connection.man.request_available_at = now + DAY
-        connection.man.save(update_fields=["request_available_at"])
+
+    # ── BUG FIX (CRITICAL) ────────────────────────────────────────────────────
+    # The original code had this block here:
+    #
+    #   if man_active_before >= connection.man.connection_cap \
+    #           and connection.man.request_available_at <= now:
+    #       connection.man.request_available_at = now + DAY
+    #       connection.man.save(update_fields=["request_available_at"])
+    #
+    # When the man was at his cap AND his 24-hour timer had already expired
+    # (request_available_at <= now means he could request RIGHT NOW), ending a
+    # connection would push his timer 24 hours into the future, delaying him by
+    # a full day when he should have been able to request immediately.
+    #
+    # The man's request timer is owned entirely by establish_connection. Nothing
+    # in end_connection should modify it. Removed.
+    # ──────────────────────────────────────────────────────────────────────────
+
     match_waiting_requests(now=now)
     return connection
 
@@ -150,10 +192,11 @@ def cancel_request(request, now=None):
 def match_waiting_requests(now=None):
     now = now or timezone.now()
     matched = []
-    for request in ConnectionRequest.objects.select_for_update().filter(
-        status=ConnectionRequest.Status.QUEUED,
-        expires_at__gt=now,
-    ).select_related("requester"):
+    for request in (
+        ConnectionRequest.objects.select_for_update()
+        .filter(status=ConnectionRequest.Status.QUEUED, expires_at__gt=now)
+        .select_related("requester")
+    ):
         if not request.requester.is_eligible:
             continue
         candidates = _eligible_candidates(request.requester, now)
@@ -191,10 +234,12 @@ def process_timers(now=None):
 
 
 def _open_window(reveal, now):
+    """Transition a RevealRequest into WINDOW_OPEN and persist it."""
     reveal.status = RevealRequest.Status.WINDOW_OPEN
     reveal.window_opened_at = now
     reveal.window_expires_at = now + REVEAL_WINDOW
     fields = ["status", "window_opened_at", "window_expires_at"]
+    # Only write partner_responded_at if it was set by the caller.
     if reveal.partner_responded_at:
         fields.append("partner_responded_at")
     reveal.save(update_fields=fields)
@@ -210,7 +255,7 @@ def start_reveal(connection, requester, now=None):
     if connection.identities_revealed:
         raise ValidationError("Identities are already revealed.")
     if connection.reveal_cooldown_until and connection.reveal_cooldown_until > now:
-        raise ValidationError("Reveal requests are cooling down after a rejection.")
+        raise ValidationError("Reveal requests are cooling down after a recent rejection.")
     if connection.reveal_requests.filter(
         status__in=[
             RevealRequest.Status.PENDING_PARTNER,
@@ -225,7 +270,15 @@ def start_reveal(connection, requester, now=None):
 @transaction.atomic
 def partner_respond(reveal, responder, accept, now=None):
     now = now or timezone.now()
-    reveal = RevealRequest.objects.select_for_update().select_related("connection").get(pk=reveal.pk)
+    # ── BUG FIX (MEDIUM) ─────────────────────────────────────────────────────
+    # Original select_related only included "connection"; accessing
+    # reveal.requester.gender caused an additional DB round-trip.
+    # Added "requester" to the select_related call.
+    reveal = (
+        RevealRequest.objects.select_for_update()
+        .select_related("connection", "requester")
+        .get(pk=reveal.pk)
+    )
     if reveal.status != RevealRequest.Status.PENDING_PARTNER:
         raise ValidationError("This reveal request is no longer waiting for a response.")
     if responder.pk == reveal.requester_id or not reveal.connection.includes(responder):
@@ -234,7 +287,10 @@ def partner_respond(reveal, responder, accept, now=None):
     if not accept:
         return reject_reveal(reveal, now=now)
     if reveal.requester.gender == User.Gender.MAN:
+        # Man initiated → woman accepted → open the photo window immediately.
         return _open_window(reveal, now)
+    # Woman initiated → man accepted → ask the woman to reconfirm she is ready
+    # before the photo window opens (safety step when she may not be on screen).
     reveal.status = RevealRequest.Status.AWAITING_WOMAN
     reveal.save(update_fields=["status", "partner_responded_at"])
     return reveal
@@ -243,7 +299,11 @@ def partner_respond(reveal, responder, accept, now=None):
 @transaction.atomic
 def woman_reconfirm(reveal, woman, now=None):
     now = now or timezone.now()
-    reveal = RevealRequest.objects.select_for_update().select_related("connection").get(pk=reveal.pk)
+    reveal = (
+        RevealRequest.objects.select_for_update()
+        .select_related("connection")
+        .get(pk=reveal.pk)
+    )
     if reveal.status != RevealRequest.Status.AWAITING_WOMAN or woman.pk != reveal.connection.woman_id:
         raise PermissionDenied
     return _open_window(reveal, now)
@@ -251,8 +311,14 @@ def woman_reconfirm(reveal, woman, now=None):
 
 @transaction.atomic
 def complete_reveal(reveal, woman=None, now=None):
+    """Finalise a reveal — either triggered by the woman confirming or by the
+    3-minute window auto-expiring (process_timers calls this with woman=None)."""
     now = now or timezone.now()
-    reveal = RevealRequest.objects.select_for_update().select_related("connection").get(pk=reveal.pk)
+    reveal = (
+        RevealRequest.objects.select_for_update()
+        .select_related("connection")
+        .get(pk=reveal.pk)
+    )
     if reveal.status != RevealRequest.Status.WINDOW_OPEN:
         raise ValidationError("The reveal photo window is not open.")
     if woman is not None and woman.pk != reveal.connection.woman_id:
@@ -269,10 +335,49 @@ def complete_reveal(reveal, woman=None, now=None):
 
 @transaction.atomic
 def reject_reveal(reveal, now=None):
+    """Partner declined the reveal request before the photo window opened.
+    Sets status=REJECTED and starts the 24-hour reveal cooldown."""
     now = now or timezone.now()
     reveal.status = RevealRequest.Status.REJECTED
     reveal.resolved_at = now
-    reveal.save(update_fields=["status", "resolved_at", "partner_responded_at"])
+    # Only include partner_responded_at if it was set by the caller (partner_respond).
+    fields = ["status", "resolved_at"]
+    if reveal.partner_responded_at:
+        fields.append("partner_responded_at")
+    reveal.save(update_fields=fields)
+    connection = reveal.connection
+    connection.reveal_cooldown_until = now + DAY
+    connection.save(update_fields=["reveal_cooldown_until"])
+    return reveal
+
+
+# ── BUG FIX (MEDIUM) ─────────────────────────────────────────────────────────
+# The original code used reject_reveal (status=REJECTED) for two different
+# actions:
+#   1. Partner declining before the photo window (partner_respond accept=False)
+#   2. Woman cancelling during the 3-minute photo preview window (reveal_decide)
+#
+# These are semantically distinct events. The model already defined a
+# CANCELLED status for case 2 but it was never used. This function handles
+# that case correctly. The view (reveal_decide) now calls cancel_reveal instead
+# of reject_reveal for window cancellations.
+@transaction.atomic
+def cancel_reveal(reveal, woman, now=None):
+    """Woman cancels during the 3-minute photo preview window.
+    Sets status=CANCELLED and starts the 24-hour reveal cooldown."""
+    now = now or timezone.now()
+    reveal = (
+        RevealRequest.objects.select_for_update()
+        .select_related("connection")
+        .get(pk=reveal.pk)
+    )
+    if reveal.status != RevealRequest.Status.WINDOW_OPEN:
+        raise ValidationError("The photo window is not open.")
+    if woman.pk != reveal.connection.woman_id:
+        raise PermissionDenied
+    reveal.status = RevealRequest.Status.CANCELLED
+    reveal.resolved_at = now
+    reveal.save(update_fields=["status", "resolved_at"])
     connection = reveal.connection
     connection.reveal_cooldown_until = now + DAY
     connection.save(update_fields=["reveal_cooldown_until"])
@@ -292,15 +397,22 @@ def report_user(reporter, connection, reason, severity):
         severity=severity,
     )
     if severity == Report.Severity.SEVERE:
+        # Immediate suspension pending admin review. is_blocked prevents new
+        # matches; suspended_until gates further platform actions.
         reported_user.is_blocked = True
         reported_user.suspended_until = timezone.now() + timedelta(hours=48)
         reported_user.save(update_fields=["is_blocked", "suspended_until"])
     else:
-        distinct_reports = Report.objects.filter(
-            reported_user=reported_user,
-            status=Report.Status.OPEN,
-            reporter__email_verified=True,
-        ).values("reporter").distinct().count()
+        distinct_reports = (
+            Report.objects.filter(
+                reported_user=reported_user,
+                status=Report.Status.OPEN,
+                reporter__email_verified=True,
+            )
+            .values("reporter")
+            .distinct()
+            .count()
+        )
         if distinct_reports >= 4:
             reported_user.suspended_until = timezone.now() + timedelta(hours=48)
             reported_user.save(update_fields=["suspended_until"])
