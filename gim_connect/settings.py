@@ -48,7 +48,6 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
-    "whitenoise.middleware.WhiteNoiseMiddleware",  # Must be directly after SecurityMiddleware
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -122,7 +121,7 @@ TIME_ZONE = "Asia/Kolkata"
 USE_I18N = True
 USE_TZ = True
 
-STATIC_URL = "static/"
+STATIC_URL = "/static/"
 
 # FIX: Guard against missing source static dir — prevents collectstatic from
 # crashing if you have no hand-written static files yet.
@@ -131,15 +130,15 @@ STATICFILES_DIRS = [_static_src] if _static_src.exists() else []
 
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
-# FIX: Django 5.2 uses STORAGES dict instead of the deprecated
-# STATICFILES_STORAGE string. CompressedManifestStaticFilesStorage gives
-# WhiteNoise fingerprinted filenames + gzip/brotli for free.
+# Vercel serves /static/* directly from the committed static folder.
+# Keep Django's staticfiles storage simple so the serverless function does
+# not require a generated /var/task/staticfiles directory at runtime.
 STORAGES = {
     "default": {
         "BACKEND": "django.core.files.storage.FileSystemStorage",
     },
     "staticfiles": {
-        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
     },
 }
 
