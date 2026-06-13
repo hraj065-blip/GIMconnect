@@ -29,3 +29,30 @@ Demo accounts use `connect123`:
 - `woman2@gim.ac.in`
 
 Run `.venv/bin/python manage.py process_connect_timers` every minute in production. Configure the allowed institutional domains with `GIM_ALLOWED_EMAIL_DOMAINS`.
+
+## Vercel deployment notes
+
+The app is configured for Vercel serverless deployment:
+
+- `/static/*` is served directly from the committed `static/` folder.
+- WhiteNoise is not required at runtime, so the app no longer crashes if `/var/task/staticfiles/` is absent.
+- `build.sh` still runs `collectstatic` so Django admin assets are prepared during build.
+
+Set these Vercel environment variables before production use:
+
+```text
+DJANGO_SECRET_KEY=<long-random-secret>
+DJANGO_DEBUG=False
+DATABASE_URL=<your-postgres-url>
+EMAIL_HOST_USER=<otp-sender-email>
+EMAIL_HOST_PASSWORD=<smtp-or-app-password>
+DEFAULT_FROM_EMAIL=GIM Connect <your-sender-email>
+GIM_ALLOWED_EMAIL_DOMAINS=gim.ac.in
+```
+
+If you use a custom domain, also set:
+
+```text
+CUSTOM_DOMAIN=yourdomain.com
+```
+
