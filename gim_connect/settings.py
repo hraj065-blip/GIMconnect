@@ -48,7 +48,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
-    "whitenoise.middleware.WhiteNoiseMiddleware",  # <--- ADD THIS LINE BACK
+    "whitenoise.middleware.WhiteNoiseMiddleware",  # <--- WhiteNoise serves the CSS
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -80,10 +80,7 @@ TEMPLATES = [
     },
 ]
 
-# FIX: conn_max_age=0 is required for Vercel serverless.
-# Persistent connections (conn_max_age > 0) cause "connection already closed"
-# errors because each Lambda invocation may get a different container.
-# conn_health_checks removed — only relevant with persistent connections.
+# conn_max_age=0 prevents Vercel Serverless from exhausting DB connections
 DATABASES = {
     "default": dj_database_url.config(
         default=os.environ.get("DATABASE_URL", f"sqlite:///{BASE_DIR / 'db.sqlite3'}"),
@@ -124,16 +121,14 @@ USE_TZ = True
 
 STATIC_URL = "/static/"
 
-# FIX: Guard against missing source static dir — prevents collectstatic from
-# crashing if you have no hand-written static files yet.
 _static_src = BASE_DIR / "static"
 STATICFILES_DIRS = [_static_src] if _static_src.exists() else []
 
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
-# Vercel serves /static/* directly from the committed static folder.
-# Keep Django's staticfiles storage simple so the serverless function does
-# not require a generated /var/task/staticfiles directory at runtime.
+# Forces WhiteNoise to dynamically scan your code instead of looking for a missing folder
+WHITENOISE_USE_FINDERS = True
+
 STORAGES = {
     "default": {
         "BACKEND": "django.core.files.storage.FileSystemStorage",
@@ -147,7 +142,7 @@ MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
 # ---------------------------------------------------------------------------
-# Email Configuration (Safe Fallbacks for Production)
+# Email Configuration
 # ---------------------------------------------------------------------------
 
 EMAIL_BACKEND = os.environ.get("EMAIL_BACKEND") or "django.core.mail.backends.smtp.EmailBackend"
@@ -157,9 +152,9 @@ raw_port = os.environ.get("EMAIL_PORT")
 EMAIL_PORT = int(raw_port) if raw_port and raw_port.isdigit() else 587
 
 EMAIL_USE_TLS = (os.environ.get("EMAIL_USE_TLS") or "True").lower() == "true"
-EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER") or "gimconnect4@gmail.com"
+EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER") or "GIMconnect4@gmail.com"
 EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD") or ""
-DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL") or "GIM Connect <gimconnect4@gmail.com>"
+DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL") or "GIM Connect <GIMconnect4@gmail.com>"
 SERVER_EMAIL = DEFAULT_FROM_EMAIL
 
 GIM_ALLOWED_EMAIL_DOMAINS = [
@@ -171,8 +166,7 @@ GIM_ALLOWED_EMAIL_DOMAINS = [
 AI_BOOTSTRAP_ENABLED = False
 
 # ---------------------------------------------------------------------------
-# CSRF Trusted Origins — required for POST requests on Vercel
-# Without this, every form submission returns 403 Forbidden in production.
+# CSRF Trusted Origins (Crucial for Vercel Forms)
 # ---------------------------------------------------------------------------
 
 CSRF_TRUSTED_ORIGINS = [
@@ -181,7 +175,6 @@ CSRF_TRUSTED_ORIGINS = [
 if _VERCEL_URL:
     CSRF_TRUSTED_ORIGINS.append(f"https://{_VERCEL_URL}")
 
-# Add your custom domain here if you have one, e.g. "https://gimconnect.in"
 _custom_domain = os.environ.get("CUSTOM_DOMAIN")
 if _custom_domain:
     CSRF_TRUSTED_ORIGINS.append(f"https://{_custom_domain}")
