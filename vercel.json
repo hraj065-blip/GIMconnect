@@ -12,17 +12,13 @@
           "gim_connect/**",
           "connect/**",
           "templates/**",
-          "static/**",
+          "staticfiles/**", 
           "manage.py"
         ]
       }
     }
   ],
   "routes": [
-    {
-      "src": "/static/(.*)",
-      "dest": "/static/$1"
-    },
     {
       "src": "/(.*)",
       "dest": "gim_connect/wsgi.py"
