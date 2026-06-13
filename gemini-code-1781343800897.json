@@ -1,0 +1,20 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "gim_connect/wsgi.py",
+      "use": "@vercel/python",
+      "config": { "maxDuration": 25 }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/static/(.*)",
+      "dest": "static/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "gim_connect/wsgi.py"
+    }
+  ]
+}
