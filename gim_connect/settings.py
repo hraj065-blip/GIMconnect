@@ -145,9 +145,9 @@ MEDIA_ROOT = BASE_DIR / "media"
 
 # Cloudinary settings for saving user selfies
 CLOUDINARY_STORAGE = {
-    'CLOUD_NAME': os.environ.get('CLOUDINARY_CLOUD_NAME'),
-    'API_KEY': os.environ.get('CLOUDINARY_API_KEY'),
-    'API_SECRET': os.environ.get('CLOUDINARY_API_SECRET'),
+    'CLOUD_NAME': os.environ.get('dpe4gnois'),
+    'API_KEY': os.environ.get('332993185544929'),
+    'API_SECRET': os.environ.get('iz2k_Tn5lbxnn9lel7cqjwB57Bg'),
 }
 
 # ---------------------------------------------------------------------------
