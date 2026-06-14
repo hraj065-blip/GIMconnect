@@ -42,10 +42,10 @@ INSTALLED_APPS = [
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
+    "cloudinary_storage",          # <--- CLOUDINARY STORAGE
     "django.contrib.staticfiles",
+    "cloudinary",                  # <--- CLOUDINARY API
     "connect",
-    'cloudinary_storage',
-    'cloudinary',
 ]
 
 MIDDLEWARE = [
@@ -131,16 +131,20 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 # Forces WhiteNoise to dynamically scan your code instead of looking for a missing folder
 WHITENOISE_USE_FINDERS = True
 
+# ---------------------------------------------------------------------------
+# Media & Storage (Cloudinary config)
+# ---------------------------------------------------------------------------
+
 STORAGES = {
     "default": {
-        "BACKEND": "django.core.files.storage.FileSystemStorage",
+        "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage", # <--- THIS WAS THE MISSING PIECE
     },
     "staticfiles": {
         "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
     },
 }
 
-MEDIA_URL = "media/"
+MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
 # Cloudinary settings for saving user selfies
