@@ -165,9 +165,9 @@ raw_port = os.environ.get("EMAIL_PORT")
 EMAIL_PORT = int(raw_port) if raw_port and raw_port.isdigit() else 587
 
 EMAIL_USE_TLS = (os.environ.get("EMAIL_USE_TLS") or "True").lower() == "true"
-EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER") or "GIMconnect4@gmail.com"
+EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER") or "gimconnect4@gmail.com"
 EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD") or ""
-DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL") or "GIM Connect <GIMconnect4@gmail.com>"
+DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL") or "GIM Connect <gimconnect4@gmail.com>"
 SERVER_EMAIL = DEFAULT_FROM_EMAIL
 
 GIM_ALLOWED_EMAIL_DOMAINS = [
