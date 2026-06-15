@@ -165,10 +165,7 @@
     {% for item in chat_messages %}
       <div class="bubble-row {% if item.sender == user %}mine{% endif %}"
            data-msg-id="{{ item.pk }}">
-        <div class="bubble">
-          {{ item.body }}
-          <time>{{ item.created_at|date:"g:i A" }}</time>
-        </div>
+        <div class="bubble">{{ item.body }}<time>{{ item.created_at|date:"g:i A" }}</time></div>
       </div>
     {% endfor %}
   </div>
