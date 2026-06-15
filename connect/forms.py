@@ -54,7 +54,8 @@ class ReportForm(StyledFormMixin, forms.ModelForm):
         widgets = {"reason": forms.Textarea(attrs={"rows": 5, "placeholder": "Describe what happened."})}
 
 
-class SettingsForm(StyledFormMixin, forms.ModelForm):
+class SettingsForm(forms.ModelForm):
     class Meta:
         model = User
-        fields = ("display_name",)
+        # Ensure 'photo' is included in this list!
+        fields = ['display_name', 'gender', 'photo']
