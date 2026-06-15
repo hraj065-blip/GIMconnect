@@ -97,6 +97,11 @@ class EmailOTP(models.Model):
     expires_at = models.DateTimeField()
     used_at = models.DateTimeField(null=True, blank=True)
 
+    class Meta:
+        indexes = [
+            models.Index(fields=["email", "code"]),
+        ]
+
     def __str__(self):
         return f"OTP for {self.email}"
 
@@ -139,6 +144,9 @@ class ConnectionRequest(models.Model):
 
     class Meta:
         ordering = ["created_at"]
+        indexes = [
+            models.Index(fields=["requester", "status"]),
+        ]
 
     def __str__(self):
         return f"Request({self.requester} — {self.get_status_display()})"
@@ -181,6 +189,10 @@ class Connection(models.Model):
                 name="connection_users_must_differ",
             )
         ]
+        indexes = [
+            models.Index(fields=["man", "status"]),
+            models.Index(fields=["woman", "status"]),
+        ]
 
     def __str__(self):
         return f"Connection #{self.pk}: {self.man} / {self.woman} [{self.status}]"
@@ -204,6 +216,10 @@ class Message(models.Model):
 
     class Meta:
         ordering = ["created_at"]
+        indexes = [
+            models.Index(fields=["connection", "created_at"]),
+            models.Index(fields=["connection", "id"]), # Highly optimized for delta polling logic
+        ]
 
     def __str__(self):
         return f"Msg #{self.pk} in Connection #{self.connection_id} by {self.sender}"
@@ -214,9 +230,7 @@ class RevealRequest(models.Model):
         PENDING_PARTNER = "pending_partner", "Waiting for partner"
         AWAITING_WOMAN = "awaiting_woman", "Waiting for woman to reconfirm"
         WINDOW_OPEN = "window_open", "Photo review window open"
-        # Partner explicitly declined before the window opened.
         REJECTED = "rejected", "Rejected by partner"
-        # Woman cancelled during the 3-minute photo preview window.
         CANCELLED = "cancelled", "Cancelled during photo window"
         REVEALED = "revealed", "Revealed"
 
@@ -237,6 +251,9 @@ class RevealRequest(models.Model):
 
     class Meta:
         ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["connection", "status"]),
+        ]
 
     def __str__(self):
         return f"Reveal #{self.pk} on Connection #{self.connection_id} [{self.status}]"
