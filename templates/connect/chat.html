@@ -1,53 +1,491 @@
 {% extends "connect/base.html" %}
 {% block title %}Conversation{% endblock %}
+
 {% block content %}
 <section class="chat-shell">
+
+  {# ── HEADER ─────────────────────────────────────────────────────────────── #}
   <header class="chat-header">
     <a class="back-link" href="{% url 'dashboard' %}">‹ Connections</a>
-    <div><strong>{% if connection.identities_revealed %}{{ other.display_name }}{% else %}Anonymous connection{% endif %}</strong><span>{% if connection.status == "active" %}Private text conversation{% else %}This connection has ended{% endif %}</span></div>
-    <details class="menu"><summary>•••</summary><div class="menu-pop">
-      <a href="{% url 'report' connection.pk %}">Report conversation</a>
-      <form method="post" action="{% url 'block_user' connection.pk %}">{% csrf_token %}<button>Block account</button></form>
-      {% if connection.status == "active" %}<form method="post" action="{% url 'end_chat' connection.pk %}">{% csrf_token %}<button>End connection</button></form>{% endif %}
-    </div></details>
+    <div>
+      <strong>
+        {% if connection.identities_revealed %}{{ other.display_name }}
+        {% else %}Anonymous connection{% endif %}
+      </strong>
+      <span>
+        {% if connection.status == "active" %}Private text conversation
+        {% else %}This connection has ended{% endif %}
+      </span>
+    </div>
+    <details class="menu">
+      <summary aria-label="Conversation options">•••</summary>
+      <div class="menu-pop">
+        <a href="{% url 'report' connection.pk %}">Report conversation</a>
+        <form method="post" action="{% url 'block_user' connection.pk %}">
+          {% csrf_token %}<button type="submit">Block account</button>
+        </form>
+        {% if connection.status == "active" %}
+          <form method="post" action="{% url 'end_chat' connection.pk %}">
+            {% csrf_token %}<button type="submit">End connection</button>
+          </form>
+        {% endif %}
+      </div>
+    </details>
   </header>
 
+  {# ── IDENTITY / REVEAL PANEL ─────────────────────────────────────────────── #}
   {% if connection.identities_revealed %}
-    <div class="identity-banner">{% if other.photo %}<img src="{{ other.photo.url }}" alt="Revealed identity">{% endif %}<div><span class="eyebrow">Identity revealed</span><strong>{{ other.display_name }}</strong></div></div>
+    <div class="identity-banner">
+      {% if other.photo %}<img src="{{ other.photo.url }}" alt="Photo of {{ other.display_name }}">{% endif %}
+      <div>
+        <span class="eyebrow">Identity revealed</span>
+        <strong>{{ other.display_name }}</strong>
+      </div>
+    </div>
+
   {% elif reveal %}
     <div class="reveal-panel">
+
       {% if reveal.status == "pending_partner" and reveal.requester != user %}
-        <div><strong>{{ reveal.requester|yesno:"A reveal was requested,A reveal was requested" }}</strong><p>Would you like to continue toward a mutual identity reveal?</p></div>
-        <div class="inline-actions"><form method="post" action="{% url 'reveal_response' reveal.pk 'reject' %}">{% csrf_token %}<button class="button secondary">Not now</button></form><form method="post" action="{% url 'reveal_response' reveal.pk 'accept' %}">{% csrf_token %}<button class="button">Accept</button></form></div>
+        {# ── Other party requested, this user decides ── #}
+        <div>
+          <strong>Identity reveal requested</strong>
+          <p>Your connection would like to reveal identities. Would you like to continue?</p>
+        </div>
+        <div class="inline-actions">
+          <form method="post" action="{% url 'reveal_response' reveal.pk 'reject' %}">
+            {% csrf_token %}<button class="button secondary" type="submit">Not now</button>
+          </form>
+          <form method="post" action="{% url 'reveal_response' reveal.pk 'accept' %}">
+            {% csrf_token %}<button class="button" type="submit">Accept</button>
+          </form>
+        </div>
+
       {% elif reveal.status == "pending_partner" %}
-        <div><strong>Reveal request sent</strong><p>Waiting for your connection to respond.</p></div>
+        {# ── Current user requested, waiting ── #}
+        <div>
+          <strong>Reveal request sent</strong>
+          <p>Waiting for your connection to respond.</p>
+        </div>
+
       {% elif reveal.status == "awaiting_woman" and user == connection.woman %}
-        <div><strong>They accepted your reveal request</strong><p>Confirm that you are here and ready to begin your private photo review.</p></div>
-        <div class="inline-actions"><form method="post" action="{% url 'reveal_decide' reveal.pk 'reject' %}">{% csrf_token %}<button class="button secondary">Not now</button></form><form method="post" action="{% url 'reveal_reconfirm' reveal.pk %}">{% csrf_token %}<button class="button">I am ready</button></form></div>
+        {# ── Woman-initiated: man accepted, woman must reconfirm to open window ── #}
+        {#
+          NOTE: The original template had a "Not now" button here routing to
+          reveal_decide with action="reject". That endpoint checks for
+          WINDOW_OPEN status and would raise a ValidationError silently —
+          the button appeared to do nothing. Removed until a proper abort
+          endpoint is added (see views.py reveal_abort suggestion).
+        #}
+        <div>
+          <strong>They accepted your reveal request</strong>
+          <p>
+            Confirm you are ready to start your private 3-minute photo review.
+            You can still cancel after seeing the photo.
+          </p>
+        </div>
+        <div class="inline-actions">
+          <form method="post" action="{% url 'reveal_reconfirm' reveal.pk %}">
+            {% csrf_token %}<button class="button" type="submit">I am ready</button>
+          </form>
+        </div>
+
       {% elif reveal.status == "awaiting_woman" %}
-        <div><strong>Reveal accepted</strong><p>Waiting for her to reconfirm before the protected photo window opens.</p></div>
+        {# ── Man's view while waiting for woman to reconfirm ── #}
+        <div>
+          <strong>Reveal accepted</strong>
+          <p>Waiting for her to confirm she is ready before the photo window opens.</p>
+        </div>
+
       {% elif reveal.status == "window_open" and user == connection.woman %}
-        <div class="photo-review">{% if connection.man.photo %}<img src="{{ connection.man.photo.url }}" alt="Man's verification photo">{% else %}<div class="photo-placeholder">Photo unavailable in demo</div>{% endif %}<div><span class="eyebrow">Private photo review</span><strong>You have <span id="countdown" data-expires="{{ reveal.window_expires_at|date:'c' }}">3:00</span></strong><p>Confirm to reveal both identities now, reject to keep chatting anonymously, or take no action and the reveal will proceed automatically.</p><div class="inline-actions"><form method="post" action="{% url 'reveal_decide' reveal.pk 'reject' %}">{% csrf_token %}<button class="button secondary">Keep anonymous</button></form><form method="post" action="{% url 'reveal_decide' reveal.pk 'confirm' %}">{% csrf_token %}<button class="button">Confirm reveal</button></form></div></div></div>
-      {% else %}
-        <div><strong>Photo review in progress</strong><p>You will both see identities when the protected review window completes.</p></div>
+        {# ── 3-minute photo review window ── #}
+        <div class="photo-review">
+          {% if connection.man.photo %}
+            <img src="{{ connection.man.photo.url }}" alt="Photo preview">
+          {% else %}
+            <div class="photo-placeholder">Photo not available</div>
+          {% endif %}
+          <div>
+            <span class="eyebrow">Private photo review</span>
+            <strong>
+              You have
+              <span id="countdown"
+                    data-expires="{{ reveal.window_expires_at|date:'c' }}">3:00</span>
+              to decide
+            </strong>
+            <p>
+              Confirm to reveal both identities, or keep anonymous.
+              If you take no action the reveal confirms automatically.
+            </p>
+            <div class="inline-actions">
+              <form method="post" action="{% url 'reveal_decide' reveal.pk 'reject' %}">
+                {% csrf_token %}
+                <button class="button secondary" type="submit">Keep anonymous</button>
+              </form>
+              <form method="post" action="{% url 'reveal_decide' reveal.pk 'confirm' %}">
+                {% csrf_token %}
+                <button class="button" type="submit">Confirm reveal</button>
+              </form>
+            </div>
+          </div>
+        </div>
+
+      {% elif reveal.status == "window_open" %}
+        {# ── Man's view while woman is in the 3-min window ── #}
+        <div>
+          <strong>Photo review in progress</strong>
+          <p>Identities will be revealed when the protected window completes.</p>
+        </div>
       {% endif %}
+
     </div>
   {% endif %}
 
-  <div class="messages" id="messages" data-last="{% if chat_messages %}{{ chat_messages.last.pk }}{% else %}0{% endif %}" data-url="{% url 'messages_json' connection.pk %}">
-    <div class="conversation-start"><span>Anonymous connection opened</span><p>Start with curiosity. Keep identifying details private until reveal.</p></div>
-    {% for item in chat_messages %}<div class="bubble-row {% if item.sender == user %}mine{% endif %}"><div class="bubble">{{ item.body }}<time>{{ item.created_at|date:"g:i A" }}</time></div></div>{% endfor %}
+  {# ── MESSAGES ────────────────────────────────────────────────────────────── #}
+  {#
+    data-last     : highest message PK the page was rendered with; JS polls from here
+    data-url      : JSON endpoint for incremental message fetch
+    data-cstatus  : connection status at render time; client detects changes and reloads
+    data-reveal   : active reveal status at render time (or "none"); same purpose
+    data-revealed : whether identities were already revealed at render time
+  #}
+  <div class="messages" id="messages"
+       data-last="{% if chat_messages %}{{ chat_messages.last.pk }}{% else %}0{% endif %}"
+       data-url="{% url 'messages_json' connection.pk %}"
+       data-cstatus="{{ connection.status }}"
+       data-reveal="{{ reveal.status|default:'none' }}"
+       data-revealed="{{ connection.identities_revealed|yesno:'true,false' }}">
+
+    <div class="conversation-start">
+      <span>Anonymous connection opened</span>
+      <p>Start with curiosity. Keep identifying details private until reveal.</p>
+    </div>
+
+    {# data-msg-id lets the JS deduplication skip already-rendered messages #}
+    {% for item in chat_messages %}
+      <div class="bubble-row {% if item.sender == user %}mine{% endif %}"
+           data-msg-id="{{ item.pk }}">
+        <div class="bubble">
+          {{ item.body }}
+          <time>{{ item.created_at|date:"g:i A" }}</time>
+        </div>
+      </div>
+    {% endfor %}
   </div>
 
+  {# ── COMPOSER ────────────────────────────────────────────────────────────── #}
   {% if connection.status == "active" %}
-  <div class="composer-wrap">
-    {% if not connection.identities_revealed and not reveal %}<form method="post" action="{% url 'reveal_start' connection.pk %}">{% csrf_token %}<button class="reveal-button">Request identity reveal</button></form>{% endif %}
-    <form method="post" action="{% url 'send_message' connection.pk %}" class="composer">{% csrf_token %}{{ form.body }}<button type="submit">Send</button></form>
-  </div>
-  {% else %}<div class="ended-banner">This connection has ended. The conversation is read-only.</div>{% endif %}
+    <div class="composer-wrap" id="composer-wrap">
+      {% if not connection.identities_revealed and not reveal %}
+        <form method="post" action="{% url 'reveal_start' connection.pk %}">
+          {% csrf_token %}
+          <button class="reveal-button" type="submit">Request identity reveal</button>
+        </form>
+      {% endif %}
+      <form method="post"
+            action="{% url 'send_message' connection.pk %}"
+            class="composer"
+            id="send-form">
+        {% csrf_token %}
+        {{ form.body }}
+        <button type="submit" id="send-btn" aria-label="Send message">Send</button>
+      </form>
+    </div>
+  {% else %}
+    <div class="ended-banner">This connection has ended. The conversation is read-only.</div>
+  {% endif %}
+
 </section>
 {% endblock %}
-{% block scripts %}<script>
-const list=document.querySelector('#messages'); if(list){list.scrollTop=list.scrollHeight;setInterval(async()=>{try{const r=await fetch(list.dataset.url+'?after='+list.dataset.last);const d=await r.json();d.messages.forEach(m=>{const row=document.createElement('div');row.className='bubble-row '+(m.mine?'mine':'');row.innerHTML='<div class="bubble"></div>';row.firstChild.append(document.createTextNode(m.body));row.firstChild.insertAdjacentHTML('beforeend','<time>'+m.time+'</time>');list.append(row);list.dataset.last=m.id;list.scrollTop=list.scrollHeight;});}catch(error){/* Navigation or a brief reconnect can interrupt polling. */}},4000);}
-const timer=document.querySelector('#countdown'); if(timer){setInterval(()=>{const left=Math.max(0,new Date(timer.dataset.expires)-new Date());const s=Math.floor(left/1000);timer.textContent=Math.floor(s/60)+':'+String(s%60).padStart(2,'0');if(!left) location.reload();},1000);}
-</script>{% endblock %}
+
+{% block scripts %}
+<style>
+  /* ── Send error toast ────────────────────────────────────────── */
+  .send-error {
+    margin: 0 0 8px;
+    padding: 9px 14px;
+    border-radius: 12px;
+    background: #fde8e8;
+    border: 1px solid rgba(122,32,32,.14);
+    color: #7a2020;
+    font-size: 12px;
+    font-weight: 600;
+    animation: fadeIn .18s ease;
+  }
+
+  /* ── Send button loading state ───────────────────────────────── */
+  #send-btn[data-loading] {
+    opacity: .55;
+    pointer-events: none;
+  }
+
+  /* ── Optimistic bubble (slightly muted until confirmed) ──────── */
+  [data-optimistic] .bubble {
+    opacity: .78;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-4px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+</style>
+
+<script>
+/* =============================================================================
+   GIM Connect — chat.js
+   Key improvements over the original:
+
+   1. OPTIMISTIC SEND   — message appears instantly; no full page reload on send
+   2. SMART POLLING     — pauses when tab is hidden, backs off on errors,
+                          resumes and catches up immediately on tab focus
+   3. DEDUPLICATION     — server-rendered bubbles carry data-msg-id so polled
+                          messages are never inserted twice
+   4. LIVE RELOAD       — detects connection-ended or reveal-status changes from
+                          the JSON endpoint and reloads automatically
+   5. AUTO-RESIZE       — textarea grows as you type
+   6. ENTER TO SEND     — Shift+Enter for newline, bare Enter to send
+   7. SMART SCROLL      — doesn't steal scroll position when user reads history
+   8. MENU CLOSE        — details/summary menu closes on outside click
+============================================================================= */
+(function () {
+  'use strict';
+
+  /* ── DOM ────────────────────────────────────────────────────────────────── */
+  const list        = document.getElementById('messages');
+  const sendForm    = document.getElementById('send-form');
+  const sendBtn     = document.getElementById('send-btn');
+  const composerWrap = document.getElementById('composer-wrap');
+  const cdEl        = document.getElementById('countdown');
+  const textarea    = sendForm ? sendForm.querySelector('textarea') : null;
+
+  /* ── STATE ──────────────────────────────────────────────────────────────── */
+  let lastId = list ? (parseInt(list.dataset.last, 10) || 0) : 0;
+
+  // Baseline values from the server-rendered page.
+  // The poller compares live JSON against these and reloads if anything changed.
+  const initConnStatus   = list ? list.dataset.cstatus  : null;
+  const initRevealStatus = list ? list.dataset.reveal   : 'none';
+  const initRevealed     = list ? list.dataset.revealed : 'false';
+
+  // Polling config
+  let pollTimer   = null;
+  let pollMs      = 3500;  // base interval
+  let errorStreak = 0;
+  const MAX_MS    = 20000; // ceiling during back-off
+
+  /* ── SCROLL ─────────────────────────────────────────────────────────────── */
+  let userScrolledUp = false;
+
+  function nearBottom() {
+    if (!list) return true;
+    return list.scrollHeight - list.scrollTop - list.clientHeight < 80;
+  }
+
+  function scrollBottom(force) {
+    if (!list) return;
+    if (force || !userScrolledUp) list.scrollTop = list.scrollHeight;
+  }
+
+  if (list) {
+    scrollBottom(true);
+    list.addEventListener('scroll', function () {
+      userScrolledUp = !nearBottom();
+    }, { passive: true });
+  }
+
+  /* ── BUBBLE FACTORY ─────────────────────────────────────────────────────── */
+  function makeBubble(body, isMine, timeStr, msgId) {
+    const row = document.createElement('div');
+    row.className = 'bubble-row' + (isMine ? ' mine' : '');
+    if (msgId != null) row.dataset.msgId = String(msgId);
+
+    const bub = document.createElement('div');
+    bub.className = 'bubble';
+    bub.appendChild(document.createTextNode(body));
+
+    const t = document.createElement('time');
+    t.textContent = timeStr || new Date().toLocaleTimeString('en-US', {
+      hour: 'numeric', minute: '2-digit', hour12: true
+    });
+    bub.appendChild(t);
+    row.appendChild(bub);
+    return row;
+  }
+
+  /* ── POLLING ────────────────────────────────────────────────────────────── */
+  function schedulePoll(ms) {
+    clearTimeout(pollTimer);
+    if (!document.hidden) {
+      pollTimer = setTimeout(doPoll, ms != null ? ms : pollMs);
+    }
+  }
+
+  async function doPoll() {
+    if (!list) return;
+    try {
+      const res = await fetch(
+        list.dataset.url + '?after=' + lastId,
+        { credentials: 'same-origin' }
+      );
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const data = await res.json();
+
+      // ── SUCCESS — reset back-off ────────────────────────────────────────
+      errorStreak = 0;
+      pollMs = 3500;
+
+      // ── INSERT NEW MESSAGES ─────────────────────────────────────────────
+      if (data.messages && data.messages.length) {
+        // Remove optimistic bubbles — confirmed messages take their place
+        list.querySelectorAll('[data-optimistic]').forEach(function (el) {
+          el.remove();
+        });
+        data.messages.forEach(function (m) {
+          if (list.querySelector('[data-msg-id="' + m.id + '"]')) return;
+          const row = makeBubble(m.body, m.mine, m.time, m.id);
+          list.appendChild(row);
+          if (m.id > lastId) lastId = m.id;
+          scrollBottom();
+        });
+      }
+
+      // ── LIVE CHANGE DETECTION ───────────────────────────────────────────
+      // If the connection ended, a reveal was accepted/rejected, or identities
+      // were revealed while this tab was open — reload so Django re-renders the
+      // correct panel. The messages_json view must return these fields.
+      // (See views.py — add reveal_status and identities_revealed to the response.)
+      const connEnded      = data.status && data.status !== initConnStatus;
+      const revealShifted  = data.reveal_status !== undefined &&
+                             String(data.reveal_status || 'none') !== initRevealStatus;
+      const justRevealed   = data.identities_revealed === true && initRevealed === 'false';
+
+      if (connEnded || revealShifted || justRevealed) {
+        location.reload();
+        return;
+      }
+
+    } catch (_) {
+      // ── ERROR — exponential back-off ────────────────────────────────────
+      errorStreak++;
+      pollMs = Math.min(pollMs * 1.5, MAX_MS);
+    }
+
+    schedulePoll();
+  }
+
+  // Pause when tab hidden; catch up immediately when visible again
+  document.addEventListener('visibilitychange', function () {
+    if (document.hidden) {
+      clearTimeout(pollTimer);
+    } else {
+      doPoll();
+    }
+  });
+
+  schedulePoll();
+
+  /* ── OPTIMISTIC SEND ────────────────────────────────────────────────────── */
+  if (sendForm && textarea) {
+
+    // Auto-resize textarea
+    function resize() {
+      textarea.style.height = 'auto';
+      textarea.style.height = Math.min(textarea.scrollHeight, 140) + 'px';
+    }
+    textarea.addEventListener('input', resize);
+
+    // Enter sends; Shift+Enter inserts newline
+    textarea.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        if (sendForm.requestSubmit) {
+          sendForm.requestSubmit();
+        } else {
+          sendForm.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+        }
+      }
+    });
+
+    // Intercept form submit
+    sendForm.addEventListener('submit', async function (e) {
+      e.preventDefault();
+
+      const body = textarea.value.trim();
+      if (!body) return;
+
+      // 1. Show message immediately (optimistic)
+      const optimistic = makeBubble(body, true);
+      optimistic.dataset.optimistic = '1';
+      list.appendChild(optimistic);
+      scrollBottom(true);
+
+      // 2. Clear input right away so it feels snappy
+      textarea.value = '';
+      resize();
+      textarea.focus();
+      if (sendBtn) sendBtn.setAttribute('data-loading', '1');
+
+      // 3. POST in background — the server redirect response is just discarded
+      try {
+        const fd = new FormData(sendForm);
+        fd.set('body', body); // use the captured value, not the cleared field
+        const res = await fetch(sendForm.action, {
+          method: 'POST',
+          body: fd,
+          credentials: 'same-origin',
+          redirect: 'follow',
+        });
+
+        if (!res.ok) throw new Error('Send failed');
+
+        // Poll immediately to get the real message ID and replace the optimistic bubble
+        schedulePoll(300);
+
+      } catch (_) {
+        // Roll back: remove optimistic bubble, restore text, show error
+        optimistic.remove();
+        textarea.value = body;
+        resize();
+        showSendError('Message failed to send. Check your connection and try again.');
+      } finally {
+        if (sendBtn) sendBtn.removeAttribute('data-loading');
+      }
+    });
+  }
+
+  /* ── COUNTDOWN TIMER (reveal window) ────────────────────────────────────── */
+  if (cdEl) {
+    var expires = new Date(cdEl.dataset.expires);
+    var tick = setInterval(function () {
+      var left = Math.max(0, expires - Date.now());
+      var s = Math.floor(left / 1000);
+      cdEl.textContent = Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
+      if (!left) {
+        clearInterval(tick);
+        location.reload();
+      }
+    }, 1000);
+  }
+
+  /* ── MENU — CLOSE ON OUTSIDE CLICK ─────────────────────────────────────── */
+  document.addEventListener('click', function (e) {
+    var menu = document.querySelector('details.menu');
+    if (menu && menu.open && !menu.contains(e.target)) menu.open = false;
+  });
+
+  /* ── SEND ERROR ─────────────────────────────────────────────────────────── */
+  function showSendError(msg) {
+    if (!composerWrap) return;
+    // Remove any existing error first
+    var old = composerWrap.querySelector('.send-error');
+    if (old) old.remove();
+    var el = document.createElement('div');
+    el.className = 'send-error';
+    el.textContent = msg;
+    composerWrap.prepend(el);
+    setTimeout(function () { el.remove(); }, 6000);
+  }
+
+}());
+</script>
+{% endblock %}
