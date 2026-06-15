@@ -1,7 +1,7 @@
 {% extends "connect/base.html" %}
 {% block title %}Your connections{% endblock %}
 {% block content %}
-<section class="app-shell">
+<section class="dashboard-shell">
   <div class="dashboard-head">
     <div><span class="eyebrow">Your private corner</span><h1>Hello, {{ user.display_name }}.</h1><p class="muted">You have {{ active_count }} of {{ user.connection_cap }} active connection{{ active_count|pluralize }}.</p></div>
     <div class="status-pill {% if user.is_eligible %}ready{% endif %}">{% if user.is_eligible %}Ready to connect{% else %}Verification pending{% endif %}</div>
@@ -15,7 +15,19 @@
         <span class="{% if user.photo_status == 'approved' %}done{% endif %}">Photo approved</span>
         <span class="{% if user.onboarding_complete %}done{% endif %}">Guidelines accepted</span>
       </div>
-      {% if not user.onboarding_complete %}<a class="button small" href="{% url 'onboarding' %}">Finish onboarding</a>{% endif %}
+      
+      <div style="display: flex; gap: 12px; align-items: center;">
+        {% if not user.email_verified %}
+          <form method="post" action="{% url 'resend_verification' %}" style="margin: 0;">
+            {% csrf_token %}
+            <button class="button secondary small" type="submit">Resend email code</button>
+          </form>
+        {% endif %}
+        
+        {% if not user.onboarding_complete %}
+          <a class="button small" href="{% url 'onboarding' %}">Finish onboarding</a>
+        {% endif %}
+      </div>
     </div>
   {% else %}
     <div class="request-panel">
