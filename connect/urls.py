@@ -30,4 +30,5 @@ urlpatterns = [
     path("app/reveal/<int:pk>/decide/<str:action>/", views.reveal_decide, name="reveal_decide"),
     path("app/settings/", views.account_settings, name="settings"),
     path("verify/resend/", views.resend_verification, name="resend_verification"),
+    path('chat/reveal/<int:pk>/abort/', views.reveal_abort, name='reveal_abort'),
 ]
