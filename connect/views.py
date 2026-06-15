@@ -597,6 +597,43 @@ def reveal_decide(request, pk, action):
 # ---------------------------------------------------------------------------
 
 @login_required
+@require_POST
+def resend_verification(request):
+    user = request.user
+    
+    if user.email_verified:
+        messages.info(request, "Your email is already verified.")
+        return redirect("dashboard")
+
+    try:
+        otp = EmailOTP.issue(user.email)
+
+        send_mail(
+            subject="Your new GIM Connect verification code",
+            message=(
+                f"Your new verification code is {otp.code}.\n"
+                "It expires in 10 minutes.\n\n"
+                "If you did not request this, please ignore this email."
+            ),
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[user.email],
+            fail_silently=False,
+        )
+
+        request.session["verification_email"] = user.email
+        messages.success(request, "A new six-digit code has been sent to your GIM email.")
+        return redirect("verify_email")
+
+    except Exception:
+        logger.exception("resend_verification: failed to send new OTP for %s", user.email)
+        messages.error(
+            request, 
+            "We could not send a new verification email right now. Please try again later."
+        )
+        return redirect("dashboard")
+
+
+@login_required
 def account_settings(request):
     form = SettingsForm(request.POST or None, instance=request.user)
 
