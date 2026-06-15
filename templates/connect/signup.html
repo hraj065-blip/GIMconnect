@@ -2,95 +2,268 @@
 {% block title %}Join GIM Connect{% endblock %}
 {% block content %}
 <section class="auth-shell">
+
   <div class="auth-intro">
     <span class="eyebrow">Private campus access</span>
     <h1>Start anonymous.<br>Stay intentional.</h1>
-    <p>Your verification selfie is reviewed privately and never shown before a formal reveal.</p>
+    <p>Your verification selfie is reviewed privately and never shown to anyone before a formal mutual reveal.</p>
+    <div class="auth-trust-list">
+      <div class="auth-trust-item">
+        <span class="trust-icon">🔒</span>
+        <span>Your photo stays private until you choose a reveal</span>
+      </div>
+      <div class="auth-trust-item">
+        <span class="trust-icon">✉️</span>
+        <span>Only GIM institutional emails are accepted</span>
+      </div>
+      <div class="auth-trust-item">
+        <span class="trust-icon">👁️</span>
+        <span>Women see his photo first before any reveal completes</span>
+      </div>
+    </div>
   </div>
+
   <div class="form-card">
     <h2>Create your account</h2>
-    <p class="muted">Use your official GIM email.</p>
-    <form method="post" enctype="multipart/form-data" class="stack-form">
+    <p class="muted">Use your official GIM email — <strong>@gim.ac.in</strong> only.</p>
+
+    <form method="post" enctype="multipart/form-data" class="stack-form" id="signup-form">
       {% csrf_token %}
       {{ form.as_p }}
       <button class="button full" type="submit" id="submit-btn">Send verification code</button>
     </form>
-    <p class="form-footer">Already joined? <a href="{% url 'login' %}">Log in</a></p>
+
+    <p class="form-foot">Already joined? <a href="{% url 'login' %}">Log in</a></p>
   </div>
+
 </section>
 
+<!-- Spam warning modal — shown after submit before redirect -->
+<div class="spam-overlay" id="spam-overlay" role="dialog" aria-modal="true" aria-labelledby="spam-title" hidden>
+  <div class="spam-modal">
+    <div class="spam-icon">📬</div>
+    <h2 id="spam-title">Check your spam folder</h2>
+    <p class="spam-lead">
+      We just sent your 6-digit code to your GIM inbox.
+      <strong>Verification emails from new senders often land in spam</strong> —
+      especially on Gmail and institutional mail servers.
+    </p>
+
+    <div class="spam-steps">
+      <div class="spam-step">
+        <span class="step-num">1</span>
+        <div>
+          <strong>Open your Spam or Junk folder</strong>
+          <p>Look for an email from <em>GIM Connect</em> with subject line "Your GIM Connect verification code".</p>
+        </div>
+      </div>
+      <div class="spam-step">
+        <span class="step-num">2</span>
+        <div>
+          <strong>Mark it as "Not Spam"</strong>
+          <p>This ensures future OTP codes, connection alerts, and reveal notifications always reach your inbox.</p>
+        </div>
+      </div>
+      <div class="spam-step highlight-step">
+        <span class="step-num">✓</span>
+        <div>
+          <strong>Why this matters</strong>
+          <p>A missed code means a missed connection. It takes 2 seconds and keeps your GIM Connect experience uninterrupted.</p>
+        </div>
+      </div>
+    </div>
+
+    <button class="button full spam-cta" id="spam-confirm-btn">Got it — take me to verify</button>
+    <p class="spam-skip">
+      <button class="spam-skip-btn" id="spam-skip-btn">Skip, I'll check my inbox now</button>
+    </p>
+  </div>
+</div>
+
 <script>
-  document.addEventListener('DOMContentLoaded', function() {
-    const photoInput = document.querySelector('input[type="file"]');
-    const submitBtn = document.getElementById('submit-btn');
-    
-    if (!photoInput) return;
+document.addEventListener('DOMContentLoaded', function () {
 
-    photoInput.addEventListener('change', function(event) {
-      const file = event.target.files[0];
-      if (!file) return;
+  /* Photo compression */
+  const photoInput = document.querySelector('input[type="file"]');
+  const submitBtn  = document.getElementById('submit-btn');
 
-      // Only compress if the file is larger than 2MB
-      if (file.size > 2 * 1024 * 1024) {
-        
-        // Disable submit button to prevent uploading the heavy file
-        if (submitBtn) {
-          submitBtn.disabled = true;
-          submitBtn.textContent = 'Optimizing photo...';
-          submitBtn.style.opacity = '0.7';
-        }
+  if (photoInput) {
+    photoInput.addEventListener('change', function (e) {
+      const file = e.target.files[0];
+      if (!file || file.size <= 2 * 1024 * 1024) return;
 
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = function(e) {
-          const img = new Image();
-          img.src = e.target.result;
-          img.onload = function() {
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
+      submitBtn.disabled      = true;
+      submitBtn.textContent   = 'Optimising photo…';
+      submitBtn.style.opacity = '0.7';
 
-            // Calculate new dimensions (max 1200px)
-            const MAX_SIZE = 1200;
-            let width = img.width;
-            let height = img.height;
-
-            if (width > height && width > MAX_SIZE) {
-              height *= MAX_SIZE / width;
-              width = MAX_SIZE;
-            } else if (height > MAX_SIZE) {
-              width *= MAX_SIZE / height;
-              height = MAX_SIZE;
-            }
-
-            canvas.width = width;
-            canvas.height = height;
-            ctx.drawImage(img, 0, 0, width, height);
-
-            // Compress to JPEG at 70% quality
-            canvas.toBlob(function(blob) {
-              const compressedFile = new File([blob], file.name, {
-                type: 'image/jpeg',
-                lastModified: Date.now()
-              });
-
-              // Swap the heavy file for the light one
-              const dataTransfer = new DataTransfer();
-              dataTransfer.items.add(compressedFile);
-              photoInput.files = dataTransfer.files;
-
-              // Unlock the submit button
-              if (submitBtn) {
-                submitBtn.disabled = false;
-                submitBtn.textContent = 'Send verification code';
-                submitBtn.style.opacity = '1';
-              }
-
-              console.log('Image compressed from', (file.size/1024/1024).toFixed(2), 'MB to', (compressedFile.size/1024/1024).toFixed(2), 'MB');
-            }, 'image/jpeg', 0.7);
-          };
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = function (ev) {
+        const img = new Image();
+        img.src = ev.target.result;
+        img.onload = function () {
+          const MAX = 1200;
+          let w = img.width, h = img.height;
+          if (w > h && w > MAX) { h = h * MAX / w; w = MAX; }
+          else if (h > MAX)     { w = w * MAX / h; h = MAX; }
+          const canvas = document.createElement('canvas');
+          canvas.width = w; canvas.height = h;
+          canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+          canvas.toBlob(function (blob) {
+            const dt = new DataTransfer();
+            dt.items.add(new File([blob], file.name, { type: 'image/jpeg', lastModified: Date.now() }));
+            photoInput.files = dt.files;
+            submitBtn.disabled      = false;
+            submitBtn.textContent   = 'Send verification code';
+            submitBtn.style.opacity = '1';
+          }, 'image/jpeg', 0.7);
         };
-      }
+      };
     });
-  });
+  }
+
+  /* Spam modal intercept */
+  const form    = document.getElementById('signup-form');
+  const overlay = document.getElementById('spam-overlay');
+  let   formReady = false;
+
+  function doSubmit() {
+    overlay.hidden = true;
+    document.body.style.overflow = '';
+    form.submit();
+  }
+
+  if (form && overlay) {
+    form.addEventListener('submit', function (e) {
+      /* Skip if form has client-visible errors */
+      if (form.querySelectorAll('.errorlist li').length > 0) return;
+      /* Skip second call when doSubmit() triggers form.submit() */
+      if (formReady) return;
+
+      e.preventDefault();
+      overlay.hidden = false;
+      document.body.style.overflow = 'hidden';
+    });
+
+    document.getElementById('spam-confirm-btn').addEventListener('click', function () {
+      formReady = true;
+      doSubmit();
+    });
+    document.getElementById('spam-skip-btn').addEventListener('click', function () {
+      formReady = true;
+      doSubmit();
+    });
+    overlay.addEventListener('click', function (e) {
+      if (e.target === overlay) { formReady = true; doSubmit(); }
+    });
+  }
+});
 </script>
+
+<style>
+.auth-trust-list {
+  margin-top: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.auth-trust-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  font-size: 14px;
+  color: var(--ink-soft);
+  line-height: 1.55;
+}
+.trust-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+
+/* Modal overlay */
+.spam-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: rgba(8, 22, 15, 0.65);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  animation: spamFadeIn .22s ease;
+}
+.spam-overlay[hidden] { display: none; }
+@keyframes spamFadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+.spam-modal {
+  width: min(520px, 100%);
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 28px;
+  padding: 40px;
+  box-shadow: 0 40px 100px rgba(8, 22, 15, 0.32);
+  animation: spamSlideUp .26s cubic-bezier(.34, 1.56, .64, 1);
+}
+@keyframes spamSlideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+.spam-icon { font-size: 46px; text-align: center; margin-bottom: 14px; }
+
+.spam-modal h2 {
+  text-align: center;
+  font-size: 22px;
+  letter-spacing: -0.9px;
+  margin: 0 0 10px;
+  color: var(--ink);
+}
+.spam-lead {
+  text-align: center;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.65;
+  margin-bottom: 24px;
+}
+.spam-lead strong { color: var(--ink); }
+
+.spam-steps { display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px; }
+
+.spam-step {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--cream);
+}
+.spam-step.highlight-step {
+  border-color: rgba(28, 80, 63, 0.22);
+  background: var(--pine-soft);
+}
+.step-num {
+  width: 30px; height: 30px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--pine);
+  color: white;
+  font-size: 13px;
+  font-weight: 800;
+}
+.highlight-step .step-num { background: var(--ember); }
+
+.spam-step div strong { display: block; font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+.spam-step div p { color: var(--muted); font-size: 13px; line-height: 1.55; margin: 0; }
+.spam-step div em { font-style: normal; font-weight: 700; color: var(--ink); }
+
+.spam-cta { margin-top: 0; }
+.spam-skip { text-align: center; margin: 10px 0 0; }
+.spam-skip-btn {
+  border: 0; background: none; padding: 0;
+  color: var(--muted); font-size: 12px;
+  text-decoration: underline; text-underline-offset: 3px;
+  cursor: pointer;
+}
+</style>
 {% endblock %}
