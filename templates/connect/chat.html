@@ -142,13 +142,13 @@
   {% endif %}
 
   {# ── MESSAGES ────────────────────────────────────────────────────────────── #}
-  {#
+ {% comment %}
     data-last     : highest message PK the page was rendered with; JS polls from here
     data-url      : JSON endpoint for incremental message fetch
     data-cstatus  : connection status at render time; client detects changes and reloads
     data-reveal   : active reveal status at render time (or "none"); same purpose
     data-revealed : whether identities were already revealed at render time
-  #}
+  {% endcomment %}
   <div class="messages" id="messages"
        data-last="{% if chat_messages %}{{ chat_messages.last.pk }}{% else %}0{% endif %}"
        data-url="{% url 'messages_json' connection.pk %}"
