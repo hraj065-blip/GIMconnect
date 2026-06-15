@@ -3,10 +3,12 @@
 {% block content %}
 <section class="auth-shell">
 
+  <!-- ─── LEFT: Intro panel ─── -->
   <div class="auth-intro">
     <span class="eyebrow">Private campus access</span>
     <h1>Start anonymous.<br>Stay intentional.</h1>
     <p>Your verification selfie is reviewed privately and never shown to anyone before a formal mutual reveal.</p>
+
     <div class="auth-trust-list">
       <div class="auth-trust-item">
         <span class="trust-icon">🔒</span>
@@ -21,16 +23,236 @@
         <span>Women see his photo first before any reveal completes</span>
       </div>
     </div>
+
+    <!-- Step progress indicator -->
+    <div class="signup-progress" aria-label="Sign-up steps">
+      <div class="progress-step active">
+        <div class="progress-dot"></div>
+        <span>Create account</span>
+      </div>
+      <div class="progress-line"></div>
+      <div class="progress-step">
+        <div class="progress-dot"></div>
+        <span>Verify email</span>
+      </div>
+      <div class="progress-line"></div>
+      <div class="progress-step">
+        <div class="progress-dot"></div>
+        <span>Get started</span>
+      </div>
+    </div>
   </div>
 
-  <div class="form-card">
-    <h2>Create your account</h2>
-    <p class="muted">Use your official GIM email — <strong>@gim.ac.in</strong> only.</p>
+  <!-- ─── RIGHT: Form card ─── -->
+  <div class="form-card signup-card">
 
-    <form method="post" enctype="multipart/form-data" class="stack-form" id="signup-form">
+    <div class="signup-card-header">
+      <h2>Create your account</h2>
+      <p class="muted sub">Use your official GIM email — <strong>@gim.ac.in</strong> only.</p>
+    </div>
+
+    <!-- Non-field errors -->
+    {% if form.non_field_errors %}
+    <div class="form-error-banner" role="alert">
+      <span class="error-icon">⚠</span>
+      <div>
+        {% for error in form.non_field_errors %}
+          <p>{{ error }}</p>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Django messages -->
+    {% if messages %}
+    <div class="form-message-banner" role="status">
+      {% for message in messages %}
+        <p class="msg-{{ message.tags }}">{{ message }}</p>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <form method="post" enctype="multipart/form-data" class="signup-form" id="signup-form" novalidate>
       {% csrf_token %}
-      {{ form.as_p }}
-      <button class="button full" type="submit" id="submit-btn">Send verification code</button>
+
+      <!-- ── Full name ── -->
+      <div class="field {% if form.full_name.errors %}has-error{% endif %}">
+        <label for="{{ form.full_name.id_for_label }}">
+          Full name
+        </label>
+        <div class="input-wrap">
+          <span class="input-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+          </span>
+          <input
+            type="text"
+            name="{{ form.full_name.html_name }}"
+            id="{{ form.full_name.id_for_label }}"
+            value="{{ form.full_name.value|default:'' }}"
+            placeholder="Your full name"
+            autocomplete="name"
+            {% if form.full_name.field.required %}required{% endif %}
+          >
+        </div>
+        {% if form.full_name.errors %}
+          <ul class="errorlist">{% for e in form.full_name.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+        {% endif %}
+      </div>
+
+      <!-- ── Email ── -->
+      <div class="field {% if form.email.errors %}has-error{% endif %}">
+        <label for="{{ form.email.id_for_label }}">
+          GIM email address
+        </label>
+        <div class="input-wrap">
+          <span class="input-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+          </span>
+          <input
+            type="email"
+            name="{{ form.email.html_name }}"
+            id="{{ form.email.id_for_label }}"
+            value="{{ form.email.value|default:'' }}"
+            placeholder="yourname@gim.ac.in"
+            autocomplete="email"
+            inputmode="email"
+            {% if form.email.field.required %}required{% endif %}
+          >
+          <span class="email-badge" id="email-badge" hidden>@gim.ac.in ✓</span>
+        </div>
+        {% if form.email.errors %}
+          <ul class="errorlist">{% for e in form.email.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+        {% endif %}
+        <p class="field-hint">Must end in <strong>@gim.ac.in</strong> — we'll send a code to verify.</p>
+      </div>
+
+      <!-- ── Gender ── -->
+      <div class="field {% if form.gender.errors %}has-error{% endif %}">
+        <label for="{{ form.gender.id_for_label }}">Gender</label>
+        <div class="input-wrap gender-toggle" role="group" aria-label="Select gender">
+          {% for choice_value, choice_label in form.gender.field.choices %}
+          <label class="gender-option">
+            <input
+              type="radio"
+              name="{{ form.gender.html_name }}"
+              value="{{ choice_value }}"
+              {% if form.gender.value == choice_value|stringformat:"s" %}checked{% endif %}
+            >
+            <span class="gender-label">{{ choice_label }}</span>
+          </label>
+          {% endfor %}
+        </div>
+        {% if form.gender.errors %}
+          <ul class="errorlist">{% for e in form.gender.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+        {% endif %}
+      </div>
+
+      <!-- ── Password ── -->
+      <div class="field {% if form.password1.errors %}has-error{% endif %}">
+        <label for="{{ form.password1.id_for_label }}">Password</label>
+        <div class="input-wrap">
+          <span class="input-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          </span>
+          <input
+            type="password"
+            name="{{ form.password1.html_name }}"
+            id="{{ form.password1.id_for_label }}"
+            placeholder="Create a password"
+            autocomplete="new-password"
+            {% if form.password1.field.required %}required{% endif %}
+          >
+          <button type="button" class="pw-toggle" aria-label="Show password" data-target="{{ form.password1.id_for_label }}">
+            <svg class="eye-show" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+            <svg class="eye-hide" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" y1="2" x2="22" y2="22"/></svg>
+          </button>
+        </div>
+        <!-- Password strength meter -->
+        <div class="pw-strength" id="pw-strength" aria-live="polite">
+          <div class="pw-bar-track">
+            <div class="pw-bar" id="pw-bar"></div>
+          </div>
+          <span class="pw-label" id="pw-label"></span>
+        </div>
+        {% if form.password1.errors %}
+          <ul class="errorlist">{% for e in form.password1.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+        {% endif %}
+        <p class="field-hint">At least 8 characters. Mix letters and numbers for a stronger password.</p>
+      </div>
+
+      <!-- ── Confirm Password ── -->
+      <div class="field {% if form.password2.errors %}has-error{% endif %}">
+        <label for="{{ form.password2.id_for_label }}">Confirm password</label>
+        <div class="input-wrap">
+          <span class="input-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </span>
+          <input
+            type="password"
+            name="{{ form.password2.html_name }}"
+            id="{{ form.password2.id_for_label }}"
+            placeholder="Repeat your password"
+            autocomplete="new-password"
+            {% if form.password2.field.required %}required{% endif %}
+          >
+          <button type="button" class="pw-toggle" aria-label="Show password" data-target="{{ form.password2.id_for_label }}">
+            <svg class="eye-show" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+            <svg class="eye-hide" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" y1="2" x2="22" y2="22"/></svg>
+          </button>
+        </div>
+        <span class="match-hint" id="match-hint" aria-live="polite"></span>
+        {% if form.password2.errors %}
+          <ul class="errorlist">{% for e in form.password2.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+        {% endif %}
+      </div>
+
+      <!-- ── Verification photo ── -->
+      <div class="field photo-field {% if form.photo.errors %}has-error{% endif %}">
+        <label>Verification selfie</label>
+
+        <div class="photo-upload-zone" id="photo-zone" tabindex="0" role="button" aria-label="Upload verification photo">
+          <!-- Default state -->
+          <div class="photo-placeholder-ui" id="photo-placeholder">
+            <div class="photo-upload-icon">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+            </div>
+            <p class="photo-upload-label">Click or drag your selfie here</p>
+            <p class="photo-upload-sub">JPG or PNG · max 10 MB · face clearly visible</p>
+          </div>
+          <!-- Preview state (hidden initially) -->
+          <div class="photo-preview-ui" id="photo-preview" hidden>
+            <img id="photo-preview-img" src="" alt="Your verification photo preview">
+            <div class="photo-preview-overlay">
+              <button type="button" class="photo-change-btn" id="photo-change-btn">Change photo</button>
+            </div>
+          </div>
+          <input
+            type="file"
+            name="{{ form.photo.html_name }}"
+            id="{{ form.photo.id_for_label }}"
+            accept="image/jpeg,image/png,image/webp"
+            class="photo-file-input"
+            {% if form.photo.field.required %}required{% endif %}
+          >
+        </div>
+
+        <!-- Privacy reassurance under the upload zone -->
+        <div class="photo-privacy-note">
+          <span class="privacy-lock">🔒</span>
+          <span>Your photo is used only for age & identity verification — never shown publicly.</span>
+        </div>
+
+        {% if form.photo.errors %}
+          <ul class="errorlist">{% for e in form.photo.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+        {% endif %}
+      </div>
+
+      <!-- Submit -->
+      <button class="button full signup-submit" type="submit" id="submit-btn">
+        <span id="submit-text">Send verification code</span>
+        <span id="submit-spinner" class="btn-spinner" hidden aria-hidden="true"></span>
+      </button>
+
     </form>
 
     <p class="form-foot">Already joined? <a href="{% url 'login' %}">Log in</a></p>
@@ -38,7 +260,7 @@
 
 </section>
 
-<!-- Spam warning modal — shown after submit before redirect -->
+<!-- ─── Spam warning modal ─── -->
 <div class="spam-overlay" id="spam-overlay" role="dialog" aria-modal="true" aria-labelledby="spam-title" hidden>
   <div class="spam-modal">
     <div class="spam-icon">📬</div>
@@ -83,46 +305,172 @@
 <script>
 document.addEventListener('DOMContentLoaded', function () {
 
-  /* Photo compression */
-  const photoInput = document.querySelector('input[type="file"]');
-  const submitBtn  = document.getElementById('submit-btn');
+  /* ─── Password visibility toggle ─── */
+  document.querySelectorAll('.pw-toggle').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      const targetId = btn.dataset.target;
+      const input    = document.getElementById(targetId);
+      const isHidden = input.type === 'password';
+      input.type = isHidden ? 'text' : 'password';
+      btn.querySelector('.eye-show').style.display = isHidden ? 'none'  : '';
+      btn.querySelector('.eye-hide').style.display = isHidden ? ''      : 'none';
+      btn.setAttribute('aria-label', isHidden ? 'Hide password' : 'Show password');
+    });
+  });
 
-  if (photoInput) {
-    photoInput.addEventListener('change', function (e) {
-      const file = e.target.files[0];
-      if (!file || file.size <= 2 * 1024 * 1024) return;
+  /* ─── Password strength meter ─── */
+  const pw1     = document.getElementById('{{ form.password1.id_for_label }}');
+  const pwBar   = document.getElementById('pw-bar');
+  const pwLabel = document.getElementById('pw-label');
+  const pwStrengthEl = document.getElementById('pw-strength');
 
-      submitBtn.disabled      = true;
-      submitBtn.textContent   = 'Optimising photo…';
-      submitBtn.style.opacity = '0.7';
+  function scorePassword(pw) {
+    if (!pw) return 0;
+    let score = 0;
+    if (pw.length >= 8)  score++;
+    if (pw.length >= 12) score++;
+    if (/[A-Z]/.test(pw)) score++;
+    if (/[0-9]/.test(pw)) score++;
+    if (/[^A-Za-z0-9]/.test(pw)) score++;
+    return score;
+  }
 
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = function (ev) {
-        const img = new Image();
-        img.src = ev.target.result;
-        img.onload = function () {
-          const MAX = 1200;
-          let w = img.width, h = img.height;
-          if (w > h && w > MAX) { h = h * MAX / w; w = MAX; }
-          else if (h > MAX)     { w = w * MAX / h; h = MAX; }
-          const canvas = document.createElement('canvas');
-          canvas.width = w; canvas.height = h;
-          canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-          canvas.toBlob(function (blob) {
-            const dt = new DataTransfer();
-            dt.items.add(new File([blob], file.name, { type: 'image/jpeg', lastModified: Date.now() }));
-            photoInput.files = dt.files;
-            submitBtn.disabled      = false;
-            submitBtn.textContent   = 'Send verification code';
-            submitBtn.style.opacity = '1';
-          }, 'image/jpeg', 0.7);
-        };
-      };
+  const strengthMap = [
+    { label: '',          cls: '',          width: '0%'   },
+    { label: 'Too weak',  cls: 'pw-weak',   width: '20%'  },
+    { label: 'Weak',      cls: 'pw-weak',   width: '40%'  },
+    { label: 'Fair',      cls: 'pw-fair',   width: '60%'  },
+    { label: 'Good',      cls: 'pw-good',   width: '80%'  },
+    { label: 'Strong',    cls: 'pw-strong', width: '100%' },
+  ];
+
+  if (pw1) {
+    pw1.addEventListener('input', function () {
+      const score = Math.min(scorePassword(pw1.value), 5);
+      const s     = strengthMap[score];
+      pwBar.style.width = s.width;
+      pwBar.className   = 'pw-bar ' + s.cls;
+      pwLabel.textContent = s.label;
+      pwStrengthEl.hidden = !pw1.value.length;
+      checkMatch();
     });
   }
 
-  /* Spam modal intercept */
+  /* ─── Password match indicator ─── */
+  const pw2       = document.getElementById('{{ form.password2.id_for_label }}');
+  const matchHint = document.getElementById('match-hint');
+
+  function checkMatch() {
+    if (!pw2 || !pw2.value) { matchHint.textContent = ''; matchHint.className = 'match-hint'; return; }
+    const ok = pw1 && pw2.value === pw1.value;
+    matchHint.textContent = ok ? '✓ Passwords match' : '✗ Passwords do not match';
+    matchHint.className   = 'match-hint ' + (ok ? 'match-ok' : 'match-err');
+  }
+  if (pw2) pw2.addEventListener('input', checkMatch);
+
+  /* ─── Email domain badge ─── */
+  const emailInput = document.querySelector('input[type="email"]');
+  const emailBadge = document.getElementById('email-badge');
+  if (emailInput && emailBadge) {
+    emailInput.addEventListener('input', function () {
+      emailBadge.hidden = !this.value.toLowerCase().endsWith('@gim.ac.in');
+    });
+  }
+
+  /* ─── Photo upload zone ─── */
+  const photoInput   = document.getElementById('{{ form.photo.id_for_label }}');
+  const photoZone    = document.getElementById('photo-zone');
+  const photoPlaceholder = document.getElementById('photo-placeholder');
+  const photoPreview = document.getElementById('photo-preview');
+  const photoImg     = document.getElementById('photo-preview-img');
+  const changeBtn    = document.getElementById('photo-change-btn');
+  const submitBtn    = document.getElementById('submit-btn');
+  const submitText   = document.getElementById('submit-text');
+  const submitSpinner = document.getElementById('submit-spinner');
+
+  function showPreview(file) {
+    const reader = new FileReader();
+    reader.onload = function (e) {
+      photoImg.src = e.target.result;
+      photoPlaceholder.hidden = true;
+      photoPreview.hidden = false;
+      photoZone.classList.add('has-preview');
+    };
+    reader.readAsDataURL(file);
+  }
+
+  if (photoInput) {
+    /* Click on zone triggers file picker */
+    photoZone.addEventListener('click', function (e) {
+      if (e.target !== changeBtn && !changeBtn.contains(e.target)) photoInput.click();
+    });
+    photoZone.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); photoInput.click(); }
+    });
+    changeBtn && changeBtn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      photoInput.click();
+    });
+
+    /* Drag-and-drop */
+    ['dragenter', 'dragover'].forEach(function (ev) {
+      photoZone.addEventListener(ev, function (e) { e.preventDefault(); photoZone.classList.add('drag-over'); });
+    });
+    ['dragleave', 'drop'].forEach(function (ev) {
+      photoZone.addEventListener(ev, function (e) { e.preventDefault(); photoZone.classList.remove('drag-over'); });
+    });
+    photoZone.addEventListener('drop', function (e) {
+      const file = e.dataTransfer.files[0];
+      if (!file) return;
+      const dt = new DataTransfer();
+      dt.items.add(file);
+      photoInput.files = dt.files;
+      showPreview(file);
+      maybeCrunch(file);
+    });
+
+    /* File selected via picker */
+    photoInput.addEventListener('change', function (e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      showPreview(file);
+      maybeCrunch(file);
+    });
+  }
+
+  /* ─── Photo compression (> 2 MB) ─── */
+  function maybeCrunch(file) {
+    if (file.size <= 2 * 1024 * 1024) return;
+    submitBtn.disabled      = true;
+    submitText.textContent  = 'Optimising photo…';
+    submitSpinner.hidden    = false;
+
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = function (ev) {
+      const img = new Image();
+      img.src = ev.target.result;
+      img.onload = function () {
+        const MAX = 1200;
+        let w = img.width, h = img.height;
+        if (w > h && w > MAX) { h = h * MAX / w; w = MAX; }
+        else if (h > MAX)     { w = w * MAX / h; h = MAX; }
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        canvas.toBlob(function (blob) {
+          const dt = new DataTransfer();
+          dt.items.add(new File([blob], file.name, { type: 'image/jpeg', lastModified: Date.now() }));
+          photoInput.files = dt.files;
+          submitBtn.disabled     = false;
+          submitText.textContent = 'Send verification code';
+          submitSpinner.hidden   = true;
+        }, 'image/jpeg', 0.7);
+      };
+    };
+  }
+
+  /* ─── Spam modal intercept ─── */
   const form    = document.getElementById('signup-form');
   const overlay = document.getElementById('spam-overlay');
   let   formReady = false;
@@ -130,37 +478,46 @@ document.addEventListener('DOMContentLoaded', function () {
   function doSubmit() {
     overlay.hidden = true;
     document.body.style.overflow = '';
+    formReady = true;
     form.submit();
   }
 
   if (form && overlay) {
     form.addEventListener('submit', function (e) {
-      /* Skip if form has client-visible errors */
       if (form.querySelectorAll('.errorlist li').length > 0) return;
-      /* Skip second call when doSubmit() triggers form.submit() */
       if (formReady) return;
-
       e.preventDefault();
+
+      /* Loading state on button */
+      submitBtn.disabled    = true;
+      submitSpinner.hidden  = false;
+      submitText.textContent = 'Sending…';
+
       overlay.hidden = false;
       document.body.style.overflow = 'hidden';
     });
 
-    document.getElementById('spam-confirm-btn').addEventListener('click', function () {
-      formReady = true;
-      doSubmit();
-    });
-    document.getElementById('spam-skip-btn').addEventListener('click', function () {
-      formReady = true;
-      doSubmit();
-    });
+    document.getElementById('spam-confirm-btn').addEventListener('click', doSubmit);
+    document.getElementById('spam-skip-btn').addEventListener('click', doSubmit);
     overlay.addEventListener('click', function (e) {
-      if (e.target === overlay) { formReady = true; doSubmit(); }
+      if (e.target === overlay) doSubmit();
+    });
+    /* Close on Escape */
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && !overlay.hidden) doSubmit();
     });
   }
+
 });
 </script>
 
 <style>
+/* ═══════════════════════════════════════════════
+   SIGNUP PAGE — enhanced styles
+   (layered on top of app.css tokens)
+   ═══════════════════════════════════════════════ */
+
+/* ─── Trust list (auth-intro) ─── */
 .auth-trust-list {
   margin-top: 32px;
   display: flex;
@@ -177,7 +534,444 @@ document.addEventListener('DOMContentLoaded', function () {
 }
 .trust-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
 
-/* Modal overlay */
+/* ─── Step progress ─── */
+.signup-progress {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  margin-top: 44px;
+}
+.progress-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+.progress-step span {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .4px;
+  color: var(--muted);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.progress-dot {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid var(--line);
+  background: var(--paper);
+  transition: border-color .22s, background .22s, box-shadow .22s;
+}
+.progress-step.active .progress-dot {
+  border-color: var(--pine);
+  background: var(--pine);
+  box-shadow: 0 0 0 5px rgba(28, 80, 63, .12);
+}
+.progress-step.active span {
+  color: var(--pine);
+}
+.progress-line {
+  flex: 1;
+  height: 2px;
+  background: var(--line);
+  margin: 0 8px;
+  margin-bottom: 24px;
+}
+
+/* ─── Form card ─── */
+.signup-card {
+  padding: 44px;
+}
+.signup-card-header {
+  margin-bottom: 28px;
+}
+.signup-card-header h2 {
+  margin: 0 0 6px;
+}
+
+/* ─── Error / message banners ─── */
+.form-error-banner,
+.form-message-banner {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 14px 16px;
+  border-radius: 14px;
+  margin-bottom: 20px;
+  font-size: 13px;
+  line-height: 1.55;
+}
+.form-error-banner {
+  background: #fde8e8;
+  border: 1px solid rgba(143, 48, 48, .22);
+  color: #8f3030;
+}
+.form-error-banner p { margin: 0; }
+.error-icon {
+  font-size: 16px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.form-message-banner {
+  background: var(--pine-soft);
+  border: 1px solid rgba(28, 80, 63, .18);
+  color: var(--pine);
+}
+
+/* ─── Field + icons ─── */
+.signup-form { display: flex; flex-direction: column; }
+
+.field { margin-bottom: 20px; }
+.field label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: .2px;
+  color: var(--ink-soft);
+}
+
+.input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.input-icon {
+  position: absolute;
+  left: 14px;
+  color: var(--muted);
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  transition: color .18s;
+}
+.input-wrap input,
+.input-wrap select {
+  width: 100%;
+  padding: 13px 16px 13px 42px;
+  border: 1.5px solid var(--line);
+  border-radius: 14px;
+  background: var(--paper);
+  color: var(--ink);
+  font-size: 15px;
+  transition: border-color .18s, box-shadow .18s;
+  outline: none;
+  appearance: none;
+  -webkit-appearance: none;
+}
+.input-wrap input:focus,
+.input-wrap select:focus {
+  border-color: rgba(28, 80, 63, .42);
+  box-shadow: 0 0 0 4px rgba(28, 80, 63, .09);
+}
+.input-wrap input:focus ~ .input-icon,
+.input-wrap:focus-within .input-icon {
+  color: var(--pine);
+}
+.has-error .input-wrap input,
+.has-error .input-wrap select {
+  border-color: rgba(143, 48, 48, .45);
+  background: #fff8f8;
+}
+
+/* Email badge */
+.email-badge {
+  position: absolute;
+  right: 14px;
+  background: var(--pine-soft);
+  color: var(--pine);
+  font-size: 11px;
+  font-weight: 800;
+  padding: 4px 9px;
+  border-radius: 999px;
+  pointer-events: none;
+}
+
+/* ─── Gender toggle ─── */
+.gender-toggle {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  position: static;
+}
+.gender-option {
+  display: flex;
+  align-items: center;
+}
+.gender-option input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.gender-label {
+  min-height: 46px;
+  padding: 0 22px;
+  display: grid;
+  place-items: center;
+  border: 1.5px solid var(--line);
+  border-radius: 999px;
+  background: var(--paper);
+  color: var(--ink-soft);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color .18s, background .18s, color .18s, box-shadow .18s;
+  white-space: nowrap;
+}
+.gender-option input[type="radio"]:checked + .gender-label {
+  border-color: var(--pine);
+  background: var(--pine);
+  color: white;
+  box-shadow: 0 6px 18px rgba(28, 80, 63, .18);
+}
+.gender-option input[type="radio"]:focus-visible + .gender-label {
+  outline: 3px solid rgba(28, 80, 63, .35);
+  outline-offset: 2px;
+}
+
+/* ─── Password ─── */
+.pw-toggle {
+  position: absolute;
+  right: 14px;
+  border: 0;
+  background: none;
+  color: var(--muted);
+  display: grid;
+  place-items: center;
+  padding: 4px;
+  transition: color .18s;
+}
+.pw-toggle:hover { color: var(--pine); }
+
+.pw-strength {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+}
+.pw-strength[hidden] { display: none; }
+.pw-bar-track {
+  flex: 1;
+  height: 4px;
+  border-radius: 4px;
+  background: var(--line);
+  overflow: hidden;
+}
+.pw-bar {
+  height: 100%;
+  border-radius: 4px;
+  width: 0;
+  transition: width .3s ease, background .3s ease;
+}
+.pw-bar.pw-weak   { background: #c9423c; }
+.pw-bar.pw-fair   { background: var(--ember); }
+.pw-bar.pw-good   { background: #6a9c3a; }
+.pw-bar.pw-strong { background: var(--pine); }
+.pw-label {
+  font-size: 11px;
+  font-weight: 800;
+  min-width: 54px;
+  text-align: right;
+  color: var(--muted);
+}
+
+/* ─── Match hint ─── */
+.match-hint {
+  display: block;
+  margin-top: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  min-height: 18px;
+  transition: color .18s;
+}
+.match-hint.match-ok  { color: var(--pine); }
+.match-hint.match-err { color: #8f3030; }
+
+/* ─── Photo upload zone ─── */
+.photo-field label {
+  margin-bottom: 10px;
+  display: flex;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: .2px;
+  color: var(--ink-soft);
+}
+.photo-upload-zone {
+  position: relative;
+  border: 2px dashed var(--line);
+  border-radius: 18px;
+  background: var(--cream-2);
+  padding: 36px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color .22s, background .22s, box-shadow .22s;
+  overflow: hidden;
+}
+.photo-upload-zone:hover,
+.photo-upload-zone:focus-visible {
+  border-color: rgba(28, 80, 63, .38);
+  background: var(--pine-soft);
+  outline: none;
+}
+.photo-upload-zone.drag-over {
+  border-color: var(--pine);
+  background: var(--pine-soft);
+  box-shadow: 0 0 0 4px rgba(28, 80, 63, .10);
+}
+.photo-upload-zone.has-preview {
+  border-style: solid;
+  border-color: rgba(28, 80, 63, .28);
+  padding: 0;
+  height: 220px;
+}
+.photo-file-input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+  z-index: 2;
+}
+/* The visible upload placeholder */
+.photo-placeholder-ui {
+  pointer-events: none;
+}
+.photo-upload-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: white;
+  border: 1px solid var(--line);
+  display: grid;
+  place-items: center;
+  margin: 0 auto 14px;
+  color: var(--muted);
+  box-shadow: 0 4px 12px rgba(0,0,0,.06);
+}
+.photo-upload-label {
+  margin: 0 0 6px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ink);
+}
+.photo-upload-sub {
+  margin: 0;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* Photo preview */
+.photo-preview-ui {
+  position: absolute;
+  inset: 0;
+}
+.photo-preview-ui img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  border-radius: 16px;
+}
+.photo-preview-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 14px;
+  background: linear-gradient(to top, rgba(8,22,15,.60) 0%, transparent 60%);
+  border-radius: 16px;
+  opacity: 0;
+  transition: opacity .22s;
+  z-index: 3;
+}
+.photo-upload-zone:hover .photo-preview-overlay { opacity: 1; }
+.photo-change-btn {
+  border: 0;
+  background: white;
+  color: var(--pine);
+  font-size: 13px;
+  font-weight: 800;
+  padding: 8px 18px;
+  border-radius: 999px;
+  cursor: pointer;
+  position: relative;
+  z-index: 4;
+}
+
+/* Privacy note */
+.photo-privacy-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 10px;
+  padding: 10px 14px;
+  background: var(--pine-soft);
+  border-radius: 10px;
+  font-size: 12px;
+  color: var(--pine);
+  font-weight: 600;
+  line-height: 1.5;
+}
+.privacy-lock { flex-shrink: 0; font-size: 14px; }
+
+/* ─── Submit button spinner ─── */
+.signup-submit {
+  margin-top: 8px;
+  min-height: 52px;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: .1px;
+}
+.btn-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255,255,255,.30);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ─── Form footer ─── */
+.form-foot {
+  margin-top: 20px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--muted);
+}
+.form-foot a {
+  color: var(--pine);
+  font-weight: 700;
+  text-decoration: none;
+}
+.form-foot a:hover { text-decoration: underline; }
+
+/* ─── Errorlist ─── */
+.errorlist {
+  list-style: none;
+  margin: 6px 0 0;
+  padding: 0;
+  color: #8f3030;
+  font-size: 12px;
+  font-weight: 600;
+}
+.errorlist li::before {
+  content: "⚠ ";
+}
+.field-hint {
+  margin-top: 7px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+/* ─── Spam modal (unchanged from original) ─── */
 .spam-overlay {
   position: fixed;
   inset: 0;
@@ -237,7 +1031,7 @@ document.addEventListener('DOMContentLoaded', function () {
   background: var(--cream);
 }
 .spam-step.highlight-step {
-  border-color: rgba(28, 80, 63, 0.22);
+  border-color: rgba(28, 80, 63, .22);
   background: var(--pine-soft);
 }
 .step-num {
