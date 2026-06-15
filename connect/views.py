@@ -16,6 +16,7 @@ from django.core.cache import cache
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.core.mail import send_mail, BadHeaderError
 from django.db import IntegrityError, transaction
+from django.db.models import OuterRef, Subquery
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
@@ -64,10 +65,11 @@ def _maybe_process_timers():
         cache.set(lock_key, time.monotonic(), timeout=_TIMER_THROTTLE_SECONDS)
 
 
-def _get_connection_for_user(request, pk, *, allow_ended=False):
-    connection = get_object_or_404(
-        Connection.objects.select_related("man", "woman"), pk=pk
-    )
+def _get_connection_for_user(request, pk, *, allow_ended=False, select_related=True):
+    qs = Connection.objects
+    if select_related:
+        qs = qs.select_related("man", "woman")
+    connection = get_object_or_404(qs, pk=pk)
     if not connection.includes(request.user):
         raise PermissionDenied
     if not allow_ended and connection.status != Connection.Status.ACTIVE:
@@ -223,8 +225,20 @@ def onboarding(request):
 def dashboard(request):
     _maybe_process_timers()
 
-    active = request.user.active_connections().select_related("man", "woman")
-    active_count = active.count()
+    active_base = request.user.active_connections()
+    active_count = active_base.count()
+
+    last_message_subquery = (
+        Message.objects.filter(connection=OuterRef("pk"))
+        .order_by("-created_at", "-pk")
+        .values("body")[:1]
+    )
+
+    active = (
+        active_base
+        .select_related("man", "woman")
+        .annotate(last_message_body=Subquery(last_message_subquery))
+    )
 
     waiting = (
         ConnectionRequest.objects
@@ -237,7 +251,7 @@ def dashboard(request):
         | Connection.objects.filter(woman=request.user)
     ).exclude(
         status=Connection.Status.ACTIVE
-    ).select_related("man", "woman").order_by("-ended_at")[:8]
+    ).order_by("-ended_at")[:8]
 
     now = timezone.now()
     request_ready = request.user.request_available_at <= now
@@ -327,9 +341,13 @@ def chat(request, pk):
                 RevealRequest.Status.WINDOW_OPEN,
             ]
         )
-        .select_related("connection")
         .first()
     )
+    if reveal is not None:
+        # `connection` is already loaded here (with man/woman select_related).
+        # Reuse it so reveal.connection / reveal.connection.man/.woman in the
+        # template don't trigger extra queries.
+        reveal.connection = connection
 
     return render(
         request,
@@ -352,7 +370,7 @@ def chat(request, pk):
 @login_required
 @require_POST
 def send_message(request, pk):
-    connection = _get_connection_for_user(request, pk)
+    connection = _get_connection_for_user(request, pk, select_related=False)
     form = MessageForm(request.POST)
     if form.is_valid():
         body = form.cleaned_data["body"].strip()
@@ -370,7 +388,7 @@ def send_message(request, pk):
 @login_required
 @_rate_limited("gim:poll", limit_seconds=2)
 def messages_json(request, pk):
-    connection = _get_connection_for_user(request, pk, allow_ended=True)
+    connection = _get_connection_for_user(request, pk, allow_ended=True, select_related=False)
 
     try:
         after = int(request.GET.get("after", "0"))
@@ -380,7 +398,7 @@ def messages_json(request, pk):
     items = (
         connection.chat_messages
         .filter(pk__gt=after)
-        .select_related("sender")
+        .only("id", "body", "sender", "created_at")
         .order_by("pk")
     )
 
