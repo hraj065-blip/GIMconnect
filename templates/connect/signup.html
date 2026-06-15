@@ -401,8 +401,15 @@ document.addEventListener('DOMContentLoaded', function () {
 
   if (photoInput) {
     /* Click on zone triggers file picker */
+    /* Click on zone triggers file picker */
     photoZone.addEventListener('click', function (e) {
-      if (e.target !== changeBtn && !changeBtn.contains(e.target)) photoInput.click();
+      // If the user clicked the invisible file input directly, let the browser handle it naturally!
+      if (e.target === photoInput) return;
+      
+      // Otherwise, if they clicked a label or background element, force the click
+      if (e.target !== changeBtn && !changeBtn.contains(e.target)) {
+        photoInput.click();
+      }
     });
     photoZone.addEventListener('keydown', function (e) {
       if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); photoInput.click(); }
