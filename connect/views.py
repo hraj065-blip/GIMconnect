@@ -676,13 +676,22 @@ def resend_verification(request):
 
 
 @login_required
+@login_required
 def account_settings(request):
-    form = SettingsForm(request.POST or None, instance=request.user)
+    # Added request.FILES here to catch the Cloudinary image upload
+    form = SettingsForm(request.POST or None, request.FILES or None, instance=request.user)
 
     if request.method == "POST" and form.is_valid():
-        user = form.save()
+        user = form.save(commit=False)
+        
+        # If they uploaded a new photo, revert their status to pending for admin review
+        if 'photo' in form.changed_data:
+            user.photo_status = User.PhotoStatus.PENDING
+            messages.info(request, "Your new photo has been submitted for review. Your account is temporarily pending.")
+            
+        user.save()
         update_session_auth_hash(request, user)
-        messages.success(request, "Settings updated.")
+        messages.success(request, "Settings updated successfully.")
         return redirect("settings")
 
     return render(request, "connect/settings.html", {"form": form})
