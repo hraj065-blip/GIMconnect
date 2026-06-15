@@ -52,7 +52,7 @@
     {% for connection in active_connections %}
       <a class="connection-card" href="{% url 'chat' connection.pk %}">
         <div class="anonymous-orb">{% if connection.identities_revealed %}{% if user == connection.man %}{{ connection.woman.display_name|first }}{% else %}{{ connection.man.display_name|first }}{% endif %}{% else %}?{% endif %}</div>
-        <div><strong>{% if connection.identities_revealed %}{% if user == connection.man %}{{ connection.woman.display_name }}{% else %}{{ connection.man.display_name }}{% endif %}{% else %}Anonymous connection{% endif %}</strong><p>{{ connection.chat_messages.last.body|default:"A fresh conversation is waiting."|truncatechars:52 }}</p></div>
+        <div><strong>{% if connection.identities_revealed %}{% if user == connection.man %}{{ connection.woman.display_name }}{% else %}{{ connection.man.display_name }}{% endif %}{% else %}Anonymous connection{% endif %}</strong><p>{{ connection.last_message_body|default:"A fresh conversation is waiting."|truncatechars:52 }}</p></div>
         <span class="chevron">›</span>
       </a>
     {% empty %}
