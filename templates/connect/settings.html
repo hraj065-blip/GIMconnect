@@ -1,3 +1,41 @@
 {% extends "connect/base.html" %}
 {% block title %}Settings{% endblock %}
-{% block content %}<section class="narrow-shell"><div class="form-card"><span class="eyebrow">Account</span><h1>Your settings</h1><div class="account-facts"><span><b>Email</b>{{ user.email }}</span><span><b>Verification</b>{{ user.get_photo_status_display }}</span></div><form method="post" class="stack-form">{% csrf_token %}{{ form.as_p }}<button class="button full">Save changes</button></form></div></section>{% endblock %}
+
+{% block content %}
+<section class="narrow-shell">
+  <div class="form-card">
+    <span class="eyebrow">Account</span>
+    <h1>Your settings</h1>
+
+    {% if messages %}
+      <div class="form-message-banner" style="margin-bottom: 20px;">
+        {% for message in messages %}
+          <p class="msg-{{ message.tags }}" style="margin: 0; padding: 12px; border-radius: 8px; font-size: 14px; background: var(--pine-soft); color: var(--pine); font-weight: 600;">
+            {{ message }}
+          </p>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    <div class="account-facts" style="margin-bottom: 24px;">
+      <span style="display: block; margin-bottom: 8px;">
+        <b style="color: var(--muted); display: inline-block; width: 90px;">Email</b> 
+        {{ user.email }}
+      </span>
+      <span style="display: block;">
+        <b style="color: var(--muted); display: inline-block; width: 90px;">Verification</b> 
+        <strong>{{ user.get_photo_status_display }}</strong>
+      </span>
+    </div>
+
+    <form method="post" enctype="multipart/form-data" class="stack-form">
+      {% csrf_token %}
+      
+      {{ form.as_p }}
+      
+      <button type="submit" class="button full" style="margin-top: 16px;">Save changes</button>
+    </form>
+    
+  </div>
+</section>
+{% endblock %}
