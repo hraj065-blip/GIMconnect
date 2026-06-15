@@ -36,7 +36,7 @@
   {# ── IDENTITY / REVEAL PANEL ─────────────────────────────────────────────── #}
   {% if connection.identities_revealed %}
     <div class="identity-banner">
-      {% if other.photo %}<img src="{{ other.photo.url }}" alt="Photo of {{ other.display_name }}">{% endif %}
+      {% if other.photo %}<img src="{{ other.photo.url }}" class="enlargeable-photo" alt="Photo of {{ other.display_name }}">{% endif %}
       <div>
         <span class="eyebrow">Identity revealed</span>
         <strong>{{ other.display_name }}</strong>
@@ -70,13 +70,6 @@
 
       {% elif reveal.status == "awaiting_woman" and user == connection.woman %}
         {# ── Woman-initiated: man accepted, woman must reconfirm to open window ── #}
-        {#
-          NOTE: The original template had a "Not now" button here routing to
-          reveal_decide with action="reject". That endpoint checks for
-          WINDOW_OPEN status and would raise a ValidationError silently —
-          the button appeared to do nothing. Removed until a proper abort
-          endpoint is added (see views.py reveal_abort suggestion).
-        #}
         <div>
           <strong>They accepted your reveal request</strong>
           <p>
@@ -101,7 +94,7 @@
         {# ── 3-minute photo review window ── #}
         <div class="photo-review">
           {% if connection.man.photo %}
-            <img src="{{ connection.man.photo.url }}" alt="Photo preview">
+            <img src="{{ connection.man.photo.url }}" class="enlargeable-photo" alt="Photo preview">
           {% else %}
             <div class="photo-placeholder">Photo not available</div>
           {% endif %}
@@ -192,6 +185,11 @@
     <div class="ended-banner">This connection has ended. The conversation is read-only.</div>
   {% endif %}
 
+  <div id="photo-lightbox" class="lightbox-overlay" hidden>
+    <button class="lightbox-close" id="lightbox-close" aria-label="Close photo">✕</button>
+    <img id="lightbox-img" class="lightbox-img" src="" alt="Enlarged photo">
+  </div>
+
 </section>
 {% endblock %}
 
@@ -225,6 +223,59 @@
     from { opacity: 0; transform: translateY(-4px); }
     to   { opacity: 1; transform: translateY(0); }
   }
+
+  /* ── Lightbox Styles ─────────────────────────────────────────── */
+  .enlargeable-photo {
+    cursor: zoom-in;
+    transition: opacity .2s ease;
+  }
+  .enlargeable-photo:hover { opacity: .85; }
+  
+  .lightbox-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 999;
+    background: rgba(8, 22, 15, .92);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .25s ease;
+  }
+  .lightbox-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .lightbox-img {
+    max-width: 100%;
+    max-height: 85vh;
+    border-radius: 20px;
+    box-shadow: 0 30px 80px rgba(0,0,0,.5);
+    transform: scale(.95);
+    transition: transform .25s ease;
+  }
+  .lightbox-overlay.active .lightbox-img {
+    transform: scale(1);
+  }
+  .lightbox-close {
+    position: absolute;
+    top: 24px;
+    right: 24px;
+    background: rgba(255,255,255,.1);
+    color: white;
+    border: 0;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    transition: background .2s ease;
+  }
+  .lightbox-close:hover { background: rgba(255,255,255,.2); }
 </style>
 
 <script>
@@ -481,6 +532,35 @@
     el.textContent = msg;
     composerWrap.prepend(el);
     setTimeout(function () { el.remove(); }, 6000);
+  }
+
+  /* ── LIGHTBOX LOGIC ─────────────────────────────────────────────────────── */
+  const lightbox = document.getElementById('photo-lightbox');
+  const lightboxImg = document.getElementById('lightbox-img');
+  const lightboxClose = document.getElementById('lightbox-close');
+
+  if (lightbox) {
+    document.querySelectorAll('.enlargeable-photo').forEach(function(img) {
+      img.addEventListener('click', function() {
+        lightboxImg.src = this.src;
+        lightbox.hidden = false;
+        // Tiny delay to allow display to render before fading in
+        setTimeout(function() { lightbox.classList.add('active'); }, 10);
+      });
+    });
+
+    function closeLightbox() {
+      lightbox.classList.remove('active');
+      setTimeout(function() { lightbox.hidden = true; }, 250); // wait for fade out
+    }
+
+    lightboxClose.addEventListener('click', closeLightbox);
+    lightbox.addEventListener('click', function(e) {
+      if (e.target === lightbox) closeLightbox(); // Close on background click
+    });
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape' && !lightbox.hidden) closeLightbox();
+    });
   }
 
 }());
