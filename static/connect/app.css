@@ -1739,17 +1739,18 @@ button {
 }
 
 .bubble {
-  max-width: 72%;
-  padding: 11px 13px 7px;
-  border-radius: 5px 16px 16px 16px;
+  max-width: 75%;
+  padding: 10px 14px;
+  border-radius: 18px 18px 18px 4px; /* Native chat bubble swoop */
   background: var(--paper);
   line-height: 1.45;
   font-size: 14px;
   white-space: pre-wrap;
+  word-wrap: break-word; /* Prevents long URLs from breaking the box */
 }
 
 .mine .bubble {
-  border-radius: 16px 5px 16px 16px;
+  border-radius: 18px 18px 4px 18px; /* Swoop on the right side */
   background: var(--pine);
   color: white;
 }
@@ -1758,8 +1759,8 @@ button {
   display: block;
   margin-top: 4px;
   text-align: right;
-  opacity: .58;
-  font-size: 9px;
+  opacity: .65;
+  font-size: 10px;
 }
 
 .composer-wrap {
