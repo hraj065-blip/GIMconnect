@@ -58,4 +58,4 @@ class SettingsForm(forms.ModelForm):
     class Meta:
         model = User
         # Ensure 'photo' is included in this list!
-        fields = ['display_name', 'gender', 'photo']
+        fields = ['display_name', 'photo']
