@@ -426,8 +426,9 @@ def messages_json(request, pk):
                 }
                 for item in items
             ],
-            "connection_active": connection.status == Connection.Status.ACTIVE,
+            "status": connection.status,
             "reveal_status": active_reveal,
+            "identities_revealed": connection.identities_revealed,
         }
     )
 
@@ -575,6 +576,29 @@ def reveal_reconfirm(request, pk):
         logger.exception("reveal_reconfirm: unexpected error reveal %s", pk)
         messages.error(request, "Could not confirm. Please try again.")
 
+    return redirect("chat", pk=reveal.connection_id)
+
+
+@login_required
+@require_POST
+def reveal_abort(request, pk):
+    """Cancel a reveal request that has not yet reached the photo window.
+    Valid when status is PENDING_PARTNER or AWAITING_WOMAN."""
+    reveal = get_object_or_404(
+        RevealRequest.objects.select_related("connection"), pk=pk
+    )
+    try:
+        if not reveal.connection.includes(request.user):
+            raise PermissionDenied
+        if reveal.status not in (
+            RevealRequest.Status.PENDING_PARTNER,
+            RevealRequest.Status.AWAITING_WOMAN,
+        ):
+            raise ValidationError("Cannot abort at this stage.")
+        reject_reveal(reveal)
+        messages.info(request, "Reveal cancelled. The connection continues.")
+    except (ValidationError, PermissionDenied):
+        pass
     return redirect("chat", pk=reveal.connection_id)
 
 
