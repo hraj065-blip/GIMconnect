@@ -1,9 +1,238 @@
 {% extends "connect/base.html" %}
-{% block title %}Verify email{% endblock %}
+{% block title %}Verify your email{% endblock %}
 {% block content %}
 <section class="narrow-shell">
-  <div class="form-card centered"><span class="icon-disc">6</span><h1>Check your inbox</h1><p class="muted">Enter the code sent to <strong>{{ email }}</strong>. It expires in 10 minutes.</p>
-    <form method="post" class="stack-form">{% csrf_token %}{{ form.as_p }}<button class="button full">Verify email</button></form>
+  <div class="form-card centered">
+
+    <!-- Animated inbox icon -->
+    <div class="verify-icon" aria-hidden="true">
+      <div class="verify-envelope">
+        <div class="envelope-flap"></div>
+        <div class="envelope-body">
+          <div class="envelope-lines">
+            <span></span><span></span><span></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <h1>Check your inbox</h1>
+    <p class="muted verify-sub">
+      Enter the 6-digit code sent to <strong>{{ email }}</strong>.
+      It expires in <strong>10 minutes</strong>.
+    </p>
+
+    <!-- Spam alert banner -->
+    <div class="spam-alert" id="spam-alert">
+      <div class="spam-alert-icon">⚠️</div>
+      <div class="spam-alert-body">
+        <strong>Can't find it? Check your Spam folder.</strong>
+        <p>Verification emails sometimes get filtered. If you find it there, please mark it as <em>"Not Spam"</em> — this keeps future OTP codes and connection alerts in your inbox.</p>
+      </div>
+      <button class="spam-alert-close" id="spam-alert-close" aria-label="Dismiss">✕</button>
+    </div>
+
+    <form method="post" class="stack-form" id="verify-form">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <button class="button full" id="verify-btn">Verify email</button>
+    </form>
+
+    <!-- Timer + resend hint -->
+    <div class="verify-footer">
+      <p class="verify-timer-msg" id="timer-msg">
+        Code expires in <strong id="countdown">10:00</strong>
+      </p>
+      <p class="verify-resend" id="resend-msg" hidden>
+        Code expired? <a href="{% url 'signup' %}">Request a new one</a>
+      </p>
+    </div>
+
+    <!-- Wrong email escape hatch -->
+    <p class="form-foot">
+      Wrong email? <a href="{% url 'signup' %}">Go back to sign up</a>
+    </p>
+
   </div>
 </section>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+  /* Spam alert dismiss */
+  const alert = document.getElementById('spam-alert');
+  const closeBtn = document.getElementById('spam-alert-close');
+  if (closeBtn && alert) {
+    closeBtn.addEventListener('click', function () {
+      alert.style.animation = 'spamAlertOut .2s ease forwards';
+      setTimeout(function () { alert.hidden = true; }, 200);
+    });
+  }
+
+  /* 10-minute countdown */
+  const countdownEl = document.getElementById('countdown');
+  const timerMsg    = document.getElementById('timer-msg');
+  const resendMsg   = document.getElementById('resend-msg');
+
+  if (countdownEl) {
+    let seconds = 600;
+    const tick = setInterval(function () {
+      seconds--;
+      if (seconds <= 0) {
+        clearInterval(tick);
+        timerMsg.hidden  = true;
+        resendMsg.hidden = false;
+        return;
+      }
+      const m = Math.floor(seconds / 60);
+      const s = String(seconds % 60).padStart(2, '0');
+      countdownEl.textContent = m + ':' + s;
+
+      /* Turn red in last 2 minutes */
+      if (seconds <= 120) {
+        countdownEl.style.color = '#9e3830';
+      }
+    }, 1000);
+  }
+
+  /* OTP input: auto-strip whitespace, allow only digits */
+  const codeInput = document.querySelector('#verify-form input[type="text"], #verify-form input:not([type])');
+  if (codeInput) {
+    codeInput.setAttribute('inputmode', 'numeric');
+    codeInput.setAttribute('autocomplete', 'one-time-code');
+    codeInput.setAttribute('maxlength', '6');
+    codeInput.setAttribute('placeholder', '_ _ _ _ _ _');
+
+    codeInput.addEventListener('input', function () {
+      this.value = this.value.replace(/\D/g, '').slice(0, 6);
+    });
+    codeInput.addEventListener('paste', function (e) {
+      e.preventDefault();
+      const pasted = (e.clipboardData || window.clipboardData).getData('text');
+      this.value = pasted.replace(/\D/g, '').slice(0, 6);
+    });
+  }
+});
+</script>
+
+<style>
+/* Animated envelope icon */
+.verify-icon {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 24px;
+  position: relative;
+}
+.verify-envelope {
+  width: 80px;
+  height: 60px;
+  position: relative;
+  margin-top: 10px;
+}
+.envelope-flap {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 32px;
+  border-radius: 6px 6px 0 0;
+  background: var(--pine-soft);
+  border: 1.5px solid rgba(28, 80, 63, 0.2);
+  clip-path: polygon(0 0, 100% 0, 50% 55%);
+  animation: flapWave 2.8s ease-in-out infinite;
+  transform-origin: top center;
+}
+@keyframes flapWave {
+  0%, 100% { transform: rotateX(0deg); }
+  30%       { transform: rotateX(-28deg); }
+  60%       { transform: rotateX(0deg); }
+}
+.envelope-body {
+  position: absolute;
+  inset: 14px 0 0 0;
+  background: var(--pine-soft);
+  border: 1.5px solid rgba(28, 80, 63, 0.2);
+  border-radius: 0 0 8px 8px;
+  display: grid;
+  place-items: center;
+  padding-top: 4px;
+}
+.envelope-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  width: 44px;
+}
+.envelope-lines span {
+  height: 3px;
+  border-radius: 2px;
+  background: rgba(28, 80, 63, 0.35);
+}
+.envelope-lines span:nth-child(1) { width: 100%; }
+.envelope-lines span:nth-child(2) { width: 80%; }
+.envelope-lines span:nth-child(3) { width: 60%; }
+
+/* Page layout */
+.verify-sub {
+  max-width: 360px;
+  margin: 0 auto 20px;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+/* Spam alert */
+.spam-alert {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 16px 14px 16px 16px;
+  margin: 0 0 20px;
+  border: 1px solid rgba(199, 122, 61, 0.3);
+  border-radius: 16px;
+  background: var(--ember-soft);
+  text-align: left;
+  position: relative;
+  animation: spamAlertIn .3s cubic-bezier(.34, 1.56, .64, 1);
+}
+@keyframes spamAlertIn {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes spamAlertOut {
+  from { opacity: 1; transform: translateY(0); max-height: 200px; }
+  to   { opacity: 0; transform: translateY(-8px); max-height: 0; padding: 0; margin: 0; }
+}
+.spam-alert[hidden] { display: none; }
+
+.spam-alert-icon { font-size: 20px; flex-shrink: 0; margin-top: 1px; }
+
+.spam-alert-body { flex: 1; }
+.spam-alert-body strong { font-size: 13px; font-weight: 700; display: block; margin-bottom: 4px; color: var(--ember-dark); }
+.spam-alert-body p { font-size: 12.5px; color: #7a4f2e; line-height: 1.55; margin: 0; }
+.spam-alert-body em { font-style: normal; font-weight: 700; }
+
+.spam-alert-close {
+  border: 0; background: none; padding: 0;
+  color: #b8723a; font-size: 13px;
+  cursor: pointer; flex-shrink: 0;
+  line-height: 1; margin-top: 2px;
+  opacity: 0.7;
+  transition: opacity .15s;
+}
+.spam-alert-close:hover { opacity: 1; }
+
+/* OTP input styling */
+#verify-form input {
+  text-align: center;
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: 8px;
+  padding: 14px 20px;
+}
+
+/* Timer footer */
+.verify-footer { margin-top: 20px; }
+.verify-timer-msg { color: var(--muted); font-size: 13px; margin: 0; }
+.verify-timer-msg strong { color: var(--pine); }
+.verify-resend { font-size: 13px; margin: 0; color: var(--muted); }
+.verify-resend a { color: var(--pine); font-weight: 700; }
+</style>
 {% endblock %}
