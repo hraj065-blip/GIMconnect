@@ -29,4 +29,5 @@ urlpatterns = [
     path("app/reveal/<int:pk>/reconfirm/", views.reveal_reconfirm, name="reveal_reconfirm"),
     path("app/reveal/<int:pk>/decide/<str:action>/", views.reveal_decide, name="reveal_decide"),
     path("app/settings/", views.account_settings, name="settings"),
+    path("verify/resend/", views.resend_verification, name="resend_verification"),
 ]
