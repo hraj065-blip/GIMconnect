@@ -15,7 +15,7 @@ class StyledFormMixin:
 class SignupForm(StyledFormMixin, UserCreationForm):
     class Meta:
         model = User
-        fields = ("display_name", "email", "gender", "photo")
+        fields = ("display_name", "email", "gender")
 
     def clean_email(self):
         email = self.cleaned_data["email"].lower()
