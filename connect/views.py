@@ -120,13 +120,16 @@ def signup(request):
     if request.user.is_authenticated:
         return redirect("dashboard")
 
-    form = SignupForm(request.POST or None, request.FILES or None)
+    # REMOVED request.FILES since the photo is now uploaded on the dashboard
+    form = SignupForm(request.POST or None)
 
     if request.method == "POST" and form.is_valid():
         try:
             with transaction.atomic():
                 user = form.save(commit=False)
                 user.email = user.email.lower().strip()
+                # Set photo_status to PENDING automatically so the dashboard prompts them
+                user.photo_status = User.PhotoStatus.PENDING 
                 user.save()
                 otp = EmailOTP.issue(user.email)
 
@@ -161,7 +164,6 @@ def signup(request):
         return redirect("verify_email")
 
     return render(request, "connect/signup.html", {"form": form})
-
 
 def verify_email(request):
     email = request.session.get("verification_email")
