@@ -225,6 +225,14 @@ def onboarding(request):
 def dashboard(request):
     _maybe_process_timers()
 
+    # ── NEW: Catch photo uploads directly from the dashboard ──
+    if request.method == "POST" and "photo" in request.FILES:
+        request.user.photo = request.FILES["photo"]
+        request.user.photo_status = User.PhotoStatus.PENDING
+        request.user.save(update_fields=["photo", "photo_status"])
+        messages.success(request, "Your selfie has been uploaded and is pending review!")
+        return redirect("dashboard")
+
     active_base = request.user.active_connections()
     active_count = active_base.count()
 
@@ -274,8 +282,6 @@ def dashboard(request):
             "can_request": can_request,
         },
     )
-
-
 # ---------------------------------------------------------------------------
 # Connection requests
 # ---------------------------------------------------------------------------
