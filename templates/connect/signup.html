@@ -72,7 +72,8 @@
     </div>
     {% endif %}
 
-    <form method="post" enctype="multipart/form-data" class="signup-form" id="signup-form" novalidate>
+    <!-- REMOVED enctype="multipart/form-data" -->
+    <form method="post" class="signup-form" id="signup-form" novalidate>
       {% csrf_token %}
 
       <!-- ── Full name ── -->
@@ -206,47 +207,6 @@
         {% endif %}
       </div>
 
-      <!-- ── Verification photo ── -->
-      <div class="field photo-field {% if form.photo.errors %}has-error{% endif %}">
-        <label>Verification selfie</label>
-
-        <div class="photo-upload-zone" id="photo-zone" tabindex="0" role="button" aria-label="Upload verification photo">
-          <!-- Default state -->
-          <div class="photo-placeholder-ui" id="photo-placeholder">
-            <div class="photo-upload-icon">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-            </div>
-            <p class="photo-upload-label">Click or drag your selfie here</p>
-            <p class="photo-upload-sub">JPG or PNG · max 10 MB · face clearly visible</p>
-          </div>
-          <!-- Preview state (hidden initially) -->
-          <div class="photo-preview-ui" id="photo-preview" hidden>
-            <img id="photo-preview-img" src="" alt="Your verification photo preview">
-            <div class="photo-preview-overlay">
-              <button type="button" class="photo-change-btn" id="photo-change-btn">Change photo</button>
-            </div>
-          </div>
-          <input
-            type="file"
-            name="{{ form.photo.html_name }}"
-            id="{{ form.photo.id_for_label }}"
-            accept="image/jpeg,image/png,image/webp"
-            class="photo-file-input"
-            {% if form.photo.field.required %}required{% endif %}
-          >
-        </div>
-
-        <!-- Privacy reassurance under the upload zone -->
-        <div class="photo-privacy-note">
-          <span class="privacy-lock">🔒</span>
-          <span>Your photo is used only for age & identity verification — never shown publicly.</span>
-        </div>
-
-        {% if form.photo.errors %}
-          <ul class="errorlist">{% for e in form.photo.errors %}<li>{{ e }}</li>{% endfor %}</ul>
-        {% endif %}
-      </div>
-
       <!-- Submit -->
       <button class="button full signup-submit" type="submit" id="submit-btn">
         <span id="submit-text">Send verification code</span>
@@ -377,109 +337,12 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  /* ─── Photo upload zone ─── */
-  const photoInput   = document.getElementById('{{ form.photo.id_for_label }}');
-  const photoZone    = document.getElementById('photo-zone');
-  const photoPlaceholder = document.getElementById('photo-placeholder');
-  const photoPreview = document.getElementById('photo-preview');
-  const photoImg     = document.getElementById('photo-preview-img');
-  const changeBtn    = document.getElementById('photo-change-btn');
-  const submitBtn    = document.getElementById('submit-btn');
-  const submitText   = document.getElementById('submit-text');
-  const submitSpinner = document.getElementById('submit-spinner');
-
-  function showPreview(file) {
-    const reader = new FileReader();
-    reader.onload = function (e) {
-      photoImg.src = e.target.result;
-      photoPlaceholder.hidden = true;
-      photoPreview.hidden = false;
-      photoZone.classList.add('has-preview');
-    };
-    reader.readAsDataURL(file);
-  }
-
-  if (photoInput) {
-    /* Click on zone triggers file picker */
-    /* Click on zone triggers file picker */
-    photoZone.addEventListener('click', function (e) {
-      // If the user clicked the invisible file input directly, let the browser handle it naturally!
-      if (e.target === photoInput) return;
-      
-      // Otherwise, if they clicked a label or background element, force the click
-      if (e.target !== changeBtn && !changeBtn.contains(e.target)) {
-        photoInput.click();
-      }
-    });
-    photoZone.addEventListener('keydown', function (e) {
-      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); photoInput.click(); }
-    });
-    changeBtn && changeBtn.addEventListener('click', function (e) {
-      e.stopPropagation();
-      photoInput.click();
-    });
-
-    /* Drag-and-drop */
-    ['dragenter', 'dragover'].forEach(function (ev) {
-      photoZone.addEventListener(ev, function (e) { e.preventDefault(); photoZone.classList.add('drag-over'); });
-    });
-    ['dragleave', 'drop'].forEach(function (ev) {
-      photoZone.addEventListener(ev, function (e) { e.preventDefault(); photoZone.classList.remove('drag-over'); });
-    });
-    photoZone.addEventListener('drop', function (e) {
-      const file = e.dataTransfer.files[0];
-      if (!file) return;
-      const dt = new DataTransfer();
-      dt.items.add(file);
-      photoInput.files = dt.files;
-      showPreview(file);
-      maybeCrunch(file);
-    });
-
-    /* File selected via picker */
-    photoInput.addEventListener('change', function (e) {
-      const file = e.target.files[0];
-      if (!file) return;
-      showPreview(file);
-      maybeCrunch(file);
-    });
-  }
-
-  /* ─── Photo compression (> 2 MB) ─── */
-  function maybeCrunch(file) {
-    if (file.size <= 2 * 1024 * 1024) return;
-    submitBtn.disabled      = true;
-    submitText.textContent  = 'Optimising photo…';
-    submitSpinner.hidden    = false;
-
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = function (ev) {
-      const img = new Image();
-      img.src = ev.target.result;
-      img.onload = function () {
-        const MAX = 1200;
-        let w = img.width, h = img.height;
-        if (w > h && w > MAX) { h = h * MAX / w; w = MAX; }
-        else if (h > MAX)     { w = w * MAX / h; h = MAX; }
-        const canvas = document.createElement('canvas');
-        canvas.width = w; canvas.height = h;
-        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-        canvas.toBlob(function (blob) {
-          const dt = new DataTransfer();
-          dt.items.add(new File([blob], file.name, { type: 'image/jpeg', lastModified: Date.now() }));
-          photoInput.files = dt.files;
-          submitBtn.disabled     = false;
-          submitText.textContent = 'Send verification code';
-          submitSpinner.hidden   = true;
-        }, 'image/jpeg', 0.7);
-      };
-    };
-  }
-
   /* ─── Spam modal intercept ─── */
   const form    = document.getElementById('signup-form');
   const overlay = document.getElementById('spam-overlay');
+  const submitBtn    = document.getElementById('submit-btn');
+  const submitText   = document.getElementById('submit-text');
+  const submitSpinner = document.getElementById('submit-spinner');
   let   formReady = false;
 
   function doSubmit() {
@@ -496,9 +359,11 @@ document.addEventListener('DOMContentLoaded', function () {
       e.preventDefault();
 
       /* Loading state on button */
-      submitBtn.disabled    = true;
-      submitSpinner.hidden  = false;
-      submitText.textContent = 'Sending…';
+      if (submitBtn) {
+        submitBtn.disabled    = true;
+        submitSpinner.hidden  = false;
+        submitText.textContent = 'Sending…';
+      }
 
       overlay.hidden = false;
       document.body.style.overflow = 'hidden';
@@ -798,135 +663,6 @@ document.addEventListener('DOMContentLoaded', function () {
 .match-hint.match-ok  { color: var(--pine); }
 .match-hint.match-err { color: #8f3030; }
 
-/* ─── Photo upload zone ─── */
-.photo-field label {
-  margin-bottom: 10px;
-  display: flex;
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: .2px;
-  color: var(--ink-soft);
-}
-.photo-upload-zone {
-  position: relative;
-  border: 2px dashed var(--line);
-  border-radius: 18px;
-  background: var(--cream-2);
-  padding: 36px 20px;
-  text-align: center;
-  cursor: pointer;
-  transition: border-color .22s, background .22s, box-shadow .22s;
-  overflow: hidden;
-}
-.photo-upload-zone:hover,
-.photo-upload-zone:focus-visible {
-  border-color: rgba(28, 80, 63, .38);
-  background: var(--pine-soft);
-  outline: none;
-}
-.photo-upload-zone.drag-over {
-  border-color: var(--pine);
-  background: var(--pine-soft);
-  box-shadow: 0 0 0 4px rgba(28, 80, 63, .10);
-}
-.photo-upload-zone.has-preview {
-  border-style: solid;
-  border-color: rgba(28, 80, 63, .28);
-  padding: 0;
-  height: 220px;
-}
-.photo-file-input {
-  position: absolute;
-  inset: 0;
-  opacity: 0;
-  width: 100%;
-  height: 100%;
-  cursor: pointer;
-  z-index: 2;
-}
-/* The visible upload placeholder */
-.photo-placeholder-ui {
-  pointer-events: none;
-}
-.photo-upload-icon {
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  background: white;
-  border: 1px solid var(--line);
-  display: grid;
-  place-items: center;
-  margin: 0 auto 14px;
-  color: var(--muted);
-  box-shadow: 0 4px 12px rgba(0,0,0,.06);
-}
-.photo-upload-label {
-  margin: 0 0 6px;
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--ink);
-}
-.photo-upload-sub {
-  margin: 0;
-  font-size: 12px;
-  color: var(--muted);
-}
-
-/* Photo preview */
-.photo-preview-ui {
-  position: absolute;
-  inset: 0;
-}
-.photo-preview-ui img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center top;
-  border-radius: 16px;
-}
-.photo-preview-overlay {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  padding-bottom: 14px;
-  background: linear-gradient(to top, rgba(8,22,15,.60) 0%, transparent 60%);
-  border-radius: 16px;
-  opacity: 0;
-  transition: opacity .22s;
-  z-index: 3;
-}
-.photo-upload-zone:hover .photo-preview-overlay { opacity: 1; }
-.photo-change-btn {
-  border: 0;
-  background: white;
-  color: var(--pine);
-  font-size: 13px;
-  font-weight: 800;
-  padding: 8px 18px;
-  border-radius: 999px;
-  cursor: pointer;
-  position: relative;
-  z-index: 4;
-}
-
-/* Privacy note */
-.photo-privacy-note {
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  margin-top: 10px;
-  padding: 10px 14px;
-  background: var(--pine-soft);
-  border-radius: 10px;
-  font-size: 12px;
-  color: var(--pine);
-  font-weight: 600;
-  line-height: 1.5;
-}
-.privacy-lock { flex-shrink: 0; font-size: 14px; }
-
 /* ─── Submit button spinner ─── */
 .signup-submit {
   margin-top: 8px;
@@ -978,7 +714,7 @@ document.addEventListener('DOMContentLoaded', function () {
   line-height: 1.5;
 }
 
-/* ─── Spam modal (unchanged from original) ─── */
+/* ─── Spam modal ─── */
 .spam-overlay {
   position: fixed;
   inset: 0;
