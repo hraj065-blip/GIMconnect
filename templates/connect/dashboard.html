@@ -2,6 +2,15 @@
 {% block title %}Your connections{% endblock %}
 {% block content %}
 <section class="dashboard-shell">
+  
+  <!-- ── Mobile/Top Nav Action ── -->
+  <div class="dashboard-top-actions">
+    <a href="{% url 'settings' %}" class="settings-nav-link">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      <span>Settings</span>
+    </a>
+  </div>
+
   <div class="dashboard-head">
     <div>
       <span class="eyebrow">Your private corner</span>
@@ -50,7 +59,7 @@
         {% endif %}
       </div>
 
-      <!-- ── PHOTO UPLOAD UI (Only shows if email is verified but photo isn't approved) ── -->
+      <!-- ── PHOTO INSTRUCTIONS ── -->
       {% if user.email_verified and user.photo_status != 'approved' %}
         <div class="dashboard-photo-section">
           {% if user.photo_status == 'pending' %}
@@ -62,34 +71,14 @@
               </div>
             </div>
           {% else %}
-            <div class="photo-upload-container">
-              <h4 style="margin: 0 0 6px; font-size: 16px;">Upload Verification Selfie</h4>
-              <p style="font-size: 13px; color: var(--muted); margin: 0 0 16px; line-height: 1.5;">A clear photo of your face is required. It remains permanently blurred/hidden until a mutual reveal in chat.</p>
-              
-              <form method="post" enctype="multipart/form-data" id="dashboard-photo-form">
-                {% csrf_token %}
-                <div class="photo-upload-zone" id="photo-zone" tabindex="0" role="button">
-                  <div class="photo-placeholder-ui" id="photo-placeholder">
-                    <div class="photo-upload-icon">
-                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-                    </div>
-                    <p class="photo-upload-label" style="font-size: 13px; font-weight: 700; margin: 0 0 4px;">Click or drag your selfie here</p>
-                    <p style="font-size: 11px; color: var(--muted); margin: 0;">JPG or PNG only</p>
-                  </div>
-                  <div class="photo-preview-ui" id="photo-preview" hidden>
-                    <img id="photo-preview-img" src="" alt="Preview">
-                    <div class="photo-preview-overlay">
-                      <button type="button" class="photo-change-btn" id="photo-change-btn">Change</button>
-                    </div>
-                  </div>
-                  <input type="file" name="photo" id="id_photo" accept="image/jpeg,image/png,image/webp" class="photo-file-input" required>
-                </div>
-                
-                <!-- Submit Button starts hidden, appears when photo is chosen -->
-                <button class="button full" type="submit" id="submit-btn" style="margin-top: 16px; display: none;">
-                  <span id="submit-text">Submit Photo for Review</span>
-                </button>
-              </form>
+            <!-- Redirects them to settings if they haven't uploaded or if rejected -->
+            <div class="action-banner">
+              <span class="icon" style="font-size: 24px;">📸</span>
+              <div>
+                <strong style="display: block; font-size: 15px; margin-bottom: 4px;">Verification Selfie Required</strong>
+                <p style="margin: 0 0 14px; font-size: 13px; line-height: 1.5; color: var(--muted);">A clear photo of your face is required to verify your identity. It remains securely hidden until a mutual reveal in chat.</p>
+                <a class="button small" href="{% url 'settings' %}">Upload in Settings</a>
+              </div>
             </div>
           {% endif %}
         </div>
@@ -179,102 +168,36 @@
   {% endif %}
 </section>
 
-<!-- ── STYLES & SCRIPTS FOR UPLOAD UI ── -->
 <style>
+  /* Settings Link Styling */
+  .dashboard-top-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 16px;
+  }
+  .settings-nav-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ink-soft);
+    text-decoration: none;
+    padding: 8px 12px;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 99px;
+    transition: all .2s;
+  }
+  .settings-nav-link:hover {
+    background: var(--cream-2);
+    border-color: rgba(28, 80, 63, .38);
+    color: var(--pine);
+  }
+
+  /* Photo Banner Styling */
   .dashboard-photo-section { margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--line); }
   .pending-banner { display: flex; gap: 14px; background: var(--pine-soft); color: var(--pine); padding: 18px; border-radius: 14px; align-items: flex-start; }
-  .photo-upload-container { background: var(--paper); padding: 24px; border-radius: 16px; border: 1px solid var(--line); box-shadow: 0 4px 20px rgba(0,0,0,0.03); }
-  .photo-upload-zone { position: relative; border: 2px dashed var(--line); border-radius: 14px; background: var(--cream-2); padding: 24px 20px; text-align: center; cursor: pointer; transition: all .2s ease; overflow: hidden; }
-  .photo-upload-zone:hover { border-color: rgba(28, 80, 63, .38); background: var(--pine-soft); }
-  .photo-upload-zone.has-preview { border-style: solid; border-color: rgba(28, 80, 63, .28); padding: 0; height: 180px; }
-  .photo-file-input { position: absolute; inset: 0; opacity: 0; width: 100%; height: 100%; cursor: pointer; z-index: 2; }
-  .photo-placeholder-ui { pointer-events: none; }
-  .photo-upload-icon { width: 48px; height: 48px; border-radius: 50%; background: white; border: 1px solid var(--line); display: grid; place-items: center; margin: 0 auto 10px; color: var(--muted); box-shadow: 0 4px 12px rgba(0,0,0,.06); }
-  .photo-preview-ui { position: absolute; inset: 0; }
-  .photo-preview-ui img { width: 100%; height: 100%; object-fit: cover; object-position: center top; border-radius: 12px; }
-  .photo-preview-overlay { position: absolute; inset: 0; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 12px; background: linear-gradient(to top, rgba(8,22,15,.60) 0%, transparent 60%); opacity: 0; transition: opacity .2s; z-index: 3; }
-  .photo-upload-zone:hover .photo-preview-overlay { opacity: 1; }
-  .photo-change-btn { border: 0; background: white; color: var(--pine); font-size: 12px; font-weight: 800; padding: 6px 14px; border-radius: 999px; cursor: pointer; position: relative; z-index: 4; }
+  .action-banner { display: flex; gap: 14px; background: var(--paper); padding: 20px; border-radius: 14px; border: 1px solid var(--line); align-items: flex-start; box-shadow: 0 4px 20px rgba(0,0,0,0.03); }
 </style>
-
-<script>
-  document.addEventListener('DOMContentLoaded', function () {
-    const photoInput = document.getElementById('id_photo');
-    if (!photoInput) return; // Exit if upload box isn't rendered
-
-    const photoZone = document.getElementById('photo-zone');
-    const photoPlaceholder = document.getElementById('photo-placeholder');
-    const photoPreview = document.getElementById('photo-preview');
-    const photoImg = document.getElementById('photo-preview-img');
-    const changeBtn = document.getElementById('photo-change-btn');
-    const submitBtn = document.getElementById('submit-btn');
-
-    function showPreview(file) {
-      const reader = new FileReader();
-      reader.onload = function (e) {
-        photoImg.src = e.target.result;
-        photoPlaceholder.hidden = true;
-        photoPreview.hidden = false;
-        photoZone.classList.add('has-preview');
-        submitBtn.style.display = 'block'; // Reveal submit button once photo is chosen
-      };
-      reader.readAsDataURL(file);
-    }
-
-    photoZone.addEventListener('click', function (e) {
-      if (e.target === photoInput) return;
-      if (e.target !== changeBtn && !changeBtn.contains(e.target)) photoInput.click();
-    });
-
-    photoInput.addEventListener('change', function (e) {
-      const file = e.target.files[0];
-      if (!file) return;
-      showPreview(file);
-      
-      // Client-side compression
-      if (file.size > 2 * 1024 * 1024) {
-        submitBtn.disabled = true;
-        submitBtn.querySelector('span').textContent = 'Optimising...';
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = function (ev) {
-          const img = new Image();
-          img.src = ev.target.result;
-          img.onload = function () {
-            const canvas = document.createElement('canvas');
-            let w = img.width, h = img.height;
-            const MAX = 1200;
-            if (w > h && w > MAX) { h *= MAX / w; w = MAX; }
-            else if (h > MAX) { w *= MAX / h; h = MAX; }
-            canvas.width = w; canvas.height = h;
-            canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-            canvas.toBlob(function (blob) {
-              const dt = new DataTransfer();
-              dt.items.add(new File([blob], file.name, { type: 'image/jpeg', lastModified: Date.now() }));
-              photoInput.files = dt.files;
-              submitBtn.disabled = false;
-              submitBtn.querySelector('span').textContent = 'Submit Photo for Review';
-            }, 'image/jpeg', 0.7);
-          };
-        };
-      }
-    });
-    
-    // Drag and drop handlers
-    ['dragenter', 'dragover'].forEach(ev => {
-      photoZone.addEventListener(ev, e => { e.preventDefault(); photoZone.style.borderColor = 'var(--pine)'; });
-    });
-    ['dragleave', 'drop'].forEach(ev => {
-      photoZone.addEventListener(ev, e => { e.preventDefault(); photoZone.style.borderColor = ''; });
-    });
-    photoZone.addEventListener('drop', e => {
-      const file = e.dataTransfer.files[0];
-      if (!file) return;
-      const dt = new DataTransfer();
-      dt.items.add(file);
-      photoInput.files = dt.files;
-      photoInput.dispatchEvent(new Event('change')); // Trigger compression
-    });
-  });
-</script>
 {% endblock %}
