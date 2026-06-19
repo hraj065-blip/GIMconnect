@@ -76,7 +76,8 @@
     <form method="post" class="signup-form" id="signup-form" novalidate>
       {% csrf_token %}
 
-    <div class="field {% if form.display_name.errors %}has-error{% endif %}">
+      <!-- ── Full Name ── -->
+      <div class="field {% if form.display_name.errors %}has-error{% endif %}">
         <label for="{{ form.display_name.id_for_label }}">
           Full name
         </label>
@@ -219,48 +220,6 @@
 
 </section>
 
-<!-- ─── Spam warning modal ─── -->
-<div class="spam-overlay" id="spam-overlay" role="dialog" aria-modal="true" aria-labelledby="spam-title" hidden>
-  <div class="spam-modal">
-    <div class="spam-icon">📬</div>
-    <h2 id="spam-title">Check your spam folder</h2>
-    <p class="spam-lead">
-      We just sent your 6-digit code to your GIM inbox.
-      <strong>Verification emails from new senders often land in spam</strong> —
-      especially on Gmail and institutional mail servers.
-    </p>
-
-    <div class="spam-steps">
-      <div class="spam-step">
-        <span class="step-num">1</span>
-        <div>
-          <strong>Open your Spam or Junk folder</strong>
-          <p>Look for an email from <em>GIM Connect</em> with subject line "Your GIM Connect verification code".</p>
-        </div>
-      </div>
-      <div class="spam-step">
-        <span class="step-num">2</span>
-        <div>
-          <strong>Mark it as "Not Spam"</strong>
-          <p>This ensures future OTP codes, connection alerts, and reveal notifications always reach your inbox.</p>
-        </div>
-      </div>
-      <div class="spam-step highlight-step">
-        <span class="step-num">✓</span>
-        <div>
-          <strong>Why this matters</strong>
-          <p>A missed code means a missed connection. It takes 2 seconds and keeps your GIM Connect experience uninterrupted.</p>
-        </div>
-      </div>
-    </div>
-
-    <button class="button full spam-cta" id="spam-confirm-btn">Got it — take me to verify</button>
-    <p class="spam-skip">
-      <button class="spam-skip-btn" id="spam-skip-btn">Skip, I'll check my inbox now</button>
-    </p>
-  </div>
-</div>
-
 <script>
 document.addEventListener('DOMContentLoaded', function () {
 
@@ -336,46 +295,22 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  /* ─── Spam modal intercept ─── */
-  const form    = document.getElementById('signup-form');
-  const overlay = document.getElementById('spam-overlay');
-  const submitBtn    = document.getElementById('submit-btn');
-  const submitText   = document.getElementById('submit-text');
+  /* ─── Submit button loading state ─── */
+  const form = document.getElementById('signup-form');
+  const submitBtn = document.getElementById('submit-btn');
+  const submitText = document.getElementById('submit-text');
   const submitSpinner = document.getElementById('submit-spinner');
-  let   formReady = false;
 
-  function doSubmit() {
-    overlay.hidden = true;
-    document.body.style.overflow = '';
-    formReady = true;
-    form.submit();
-  }
-
-  if (form && overlay) {
+  if (form) {
     form.addEventListener('submit', function (e) {
+      // Only show spinner if there are no frontend validation errors
       if (form.querySelectorAll('.errorlist li').length > 0) return;
-      if (formReady) return;
-      e.preventDefault();
-
-      /* Loading state on button */
+      
       if (submitBtn) {
-        submitBtn.disabled    = true;
-        submitSpinner.hidden  = false;
+        submitBtn.disabled = true;
+        submitSpinner.hidden = false;
         submitText.textContent = 'Sending…';
       }
-
-      overlay.hidden = false;
-      document.body.style.overflow = 'hidden';
-    });
-
-    document.getElementById('spam-confirm-btn').addEventListener('click', doSubmit);
-    document.getElementById('spam-skip-btn').addEventListener('click', doSubmit);
-    overlay.addEventListener('click', function (e) {
-      if (e.target === overlay) doSubmit();
-    });
-    /* Close on Escape */
-    document.addEventListener('keydown', function (e) {
-      if (e.key === 'Escape' && !overlay.hidden) doSubmit();
     });
   }
 
@@ -711,99 +646,6 @@ document.addEventListener('DOMContentLoaded', function () {
   color: var(--muted);
   font-size: 12px;
   line-height: 1.5;
-}
-
-/* ─── Spam modal ─── */
-/* ─── Spam modal ─── */
-.spam-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 200;
-  background: rgba(8, 22, 15, 0.65);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  display: flex; /* Changed from grid to flex for better mobile alignment */
-  align-items: center; 
-  justify-content: center;
-  padding: 16px; /* Reduced padding to give the modal more breathing room on mobile */
-  animation: spamFadeIn .22s ease;
-}
-.spam-overlay[hidden] { display: none; }
-@keyframes spamFadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-.spam-modal {
-  width: min(520px, 100%);
-  max-height: 85vh; /* NEW: Restricts the modal height to 85% of the screen */
-  overflow-y: auto; /* NEW: Enables smooth scrolling inside the modal if it overflows */
-  background: var(--paper);
-  border: 1px solid var(--line);
-  border-radius: 24px;
-  padding: 32px 20px; /* Reduced internal padding to save space on small screens */
-  box-shadow: 0 40px 100px rgba(8, 22, 15, 0.32);
-  animation: spamSlideUp .26s cubic-bezier(.34, 1.56, .64, 1);
-}
-@keyframes spamSlideUp {
-  from { transform: translateY(20px); opacity: 0; }
-  to   { transform: translateY(0);    opacity: 1; }
-}
-
-.spam-icon { font-size: 46px; text-align: center; margin-bottom: 14px; }
-
-.spam-modal h2 {
-  text-align: center;
-  font-size: 22px;
-  letter-spacing: -0.9px;
-  margin: 0 0 10px;
-  color: var(--ink);
-}
-.spam-lead {
-  text-align: center;
-  color: var(--muted);
-  font-size: 14px;
-  line-height: 1.65;
-  margin-bottom: 24px;
-}
-.spam-lead strong { color: var(--ink); }
-
-.spam-steps { display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px; }
-
-.spam-step {
-  display: flex;
-  gap: 14px;
-  align-items: flex-start;
-  padding: 16px;
-  border: 1px solid var(--line);
-  border-radius: 16px;
-  background: var(--cream);
-}
-.spam-step.highlight-step {
-  border-color: rgba(28, 80, 63, .22);
-  background: var(--pine-soft);
-}
-.step-num {
-  width: 30px; height: 30px;
-  flex-shrink: 0;
-  display: grid;
-  place-items: center;
-  border-radius: 50%;
-  background: var(--pine);
-  color: white;
-  font-size: 13px;
-  font-weight: 800;
-}
-.highlight-step .step-num { background: var(--ember); }
-
-.spam-step div strong { display: block; font-size: 14px; font-weight: 700; margin-bottom: 4px; }
-.spam-step div p { color: var(--muted); font-size: 13px; line-height: 1.55; margin: 0; }
-.spam-step div em { font-style: normal; font-weight: 700; color: var(--ink); }
-
-.spam-cta { margin-top: 0; }
-.spam-skip { text-align: center; margin: 10px 0 0; }
-.spam-skip-btn {
-  border: 0; background: none; padding: 0;
-  color: var(--muted); font-size: 12px;
-  text-decoration: underline; text-underline-offset: 3px;
-  cursor: pointer;
 }
 </style>
 {% endblock %}
