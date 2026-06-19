@@ -76,9 +76,8 @@
     <form method="post" class="signup-form" id="signup-form" novalidate>
       {% csrf_token %}
 
-      <!-- ── Full name ── -->
-      <div class="field {% if form.full_name.errors %}has-error{% endif %}">
-        <label for="{{ form.full_name.id_for_label }}">
+    <div class="field {% if form.display_name.errors %}has-error{% endif %}">
+        <label for="{{ form.display_name.id_for_label }}">
           Full name
         </label>
         <div class="input-wrap">
@@ -87,16 +86,16 @@
           </span>
           <input
             type="text"
-            name="{{ form.full_name.html_name }}"
-            id="{{ form.full_name.id_for_label }}"
-            value="{{ form.full_name.value|default:'' }}"
+            name="{{ form.display_name.html_name }}"
+            id="{{ form.display_name.id_for_label }}"
+            value="{{ form.display_name.value|default:'' }}"
             placeholder="Your full name"
             autocomplete="name"
-            {% if form.full_name.field.required %}required{% endif %}
+            {% if form.display_name.field.required %}required{% endif %}
           >
         </div>
-        {% if form.full_name.errors %}
-          <ul class="errorlist">{% for e in form.full_name.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+        {% if form.display_name.errors %}
+          <ul class="errorlist">{% for e in form.display_name.errors %}<li>{{ e }}</li>{% endfor %}</ul>
         {% endif %}
       </div>
 
