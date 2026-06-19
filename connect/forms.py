@@ -24,11 +24,6 @@ class SignupForm(StyledFormMixin, UserCreationForm):
             raise forms.ValidationError("Use your GIM institutional email address.")
         return email
 
-    def clean_photo(self):
-        photo = self.cleaned_data.get("photo")
-        if not photo:
-            raise forms.ValidationError("A verification selfie is required.")
-        return photo
 
 
 class OTPForm(StyledFormMixin, forms.Form):
