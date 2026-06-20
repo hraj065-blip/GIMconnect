@@ -131,7 +131,7 @@
   <div class="connection-grid">
     {% for connection in active_connections %}
       <a class="connection-card" href="{% url 'chat' connection.pk %}">
-        <div class="anonymous-orb">
+     <div class="anonymous-orb">
           {% if connection.identities_revealed %}
             {% if user == connection.man %}{{ connection.woman.display_name|first }}{% else %}{{ connection.man.display_name|first }}{% endif %}
           {% else %}?{% endif %}
@@ -139,8 +139,16 @@
         <div>
           <strong>
             {% if connection.identities_revealed %}
-              {% if user == connection.man %}{{ connection.woman.display_name }}{% else %}{{ connection.man.display_name }}{% endif %}
-            {% else %}Anonymous connection{% endif %}
+              {% if user == connection.man %}
+                {{ connection.woman.display_name }}
+                <span style="display: block; font-size: 12px; color: var(--muted); font-weight: normal; margin-top: 2px; text-transform: lowercase;">{{ connection.woman.email }}</span>
+              {% else %}
+                {{ connection.man.display_name }}
+                <span style="display: block; font-size: 12px; color: var(--muted); font-weight: normal; margin-top: 2px; text-transform: lowercase;">{{ connection.man.email }}</span>
+              {% endif %}
+            {% else %}
+              Anonymous connection
+            {% endif %}
           </strong>
           <p>{{ connection.last_message_body|default:"A fresh conversation is waiting."|truncatechars:52 }}</p>
         </div>
