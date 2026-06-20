@@ -7,7 +7,6 @@ from .forms import LoginForm
 from . import views
 
 urlpatterns = [
-    path('favicon.ico', RedirectView.as_view(url='/favicon.ico', permanent=True)),
     path("", views.landing, name="landing"),
     path("signup/", views.signup, name="signup"),
     path("verify/", views.verify_email, name="verify_email"),
