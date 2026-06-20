@@ -1,0 +1,33 @@
+# GIM Connect — robots.txt
+# Anonymous-first platform: keep user-specific and auth-gated routes out of search indexes.
+# Public marketing/landing pages remain crawlable for organic discovery.
+
+User-agent: *
+Allow: /$
+Allow: /about
+Allow: /privacy
+Allow: /terms
+Allow: /safety
+
+# User-specific, account, and interaction surfaces — never index
+Disallow: /signup
+Disallow: /login
+Disallow: /profile
+Disallow: /profile/
+Disallow: /matches
+Disallow: /messages
+Disallow: /chat
+Disallow: /reveal
+Disallow: /onboarding
+Disallow: /settings
+Disallow: /notifications
+
+# Backend / infra — never index
+Disallow: /admin
+Disallow: /admin/
+Disallow: /api/
+Disallow: /static/admin/
+Disallow: /media/private/
+
+# Sitemap (update path/domain to match your deployment)
+# Sitemap: https://yourdomain.com/sitemap.xml
