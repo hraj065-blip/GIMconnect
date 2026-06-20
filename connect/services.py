@@ -220,17 +220,18 @@ def process_timers(now=None):
     expired_request_count = expired_requests.update(
         status=ConnectionRequest.Status.EXPIRED, ended_at=now
     )
-    expired_connections = list(
-        Connection.objects.filter(status=Connection.Status.ACTIVE, expires_at__lte=now)
-    )
-    for connection in expired_connections:
-        end_connection(connection, now=now, status=Connection.Status.EXPIRED)
+    # ── REMOVED: connection lifetime auto-expiry ─────────────────────────────
+    # Connections used to be force-closed to EXPIRED once Connection.expires_at
+    # passed, even if both users were actively chatting. A connection should
+    # only end when a user explicitly ends it (end_connection) or blocks the
+    # other person. The Connection.expires_at field is still written on
+    # creation (establish_connection) but is no longer read or acted on here.
     for reveal in RevealRequest.objects.filter(
         status=RevealRequest.Status.WINDOW_OPEN,
         window_expires_at__lte=now,
     ):
         complete_reveal(reveal, now=now)
-    return expired_request_count, len(expired_connections)
+    return expired_request_count
 
 
 def _open_window(reveal, now):
