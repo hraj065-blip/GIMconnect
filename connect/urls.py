@@ -1,10 +1,13 @@
 from django.contrib.auth import views as auth_views
 from django.urls import path
+from django.contrib.staticfiles.storage import staticfiles_storage
+from django.views.generic.base import RedirectView
 
 from .forms import LoginForm
 from . import views
 
 urlpatterns = [
+    path('favicon.ico', RedirectView.as_view(url='/favicon.ico', permanent=True)),
     path("", views.landing, name="landing"),
     path("signup/", views.signup, name="signup"),
     path("verify/", views.verify_email, name="verify_email"),
