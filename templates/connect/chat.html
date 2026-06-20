@@ -5,11 +5,13 @@
 <section class="chat-shell">
 
   {# ── HEADER ─────────────────────────────────────────────────────────────── #}
-  <header class="chat-header">
+ <header class="chat-header">
     <a class="back-link" href="{% url 'dashboard' %}">‹ Connections</a>
     <div>
       <strong>
-        {% if connection.identities_revealed %}{{ other.display_name }}
+        {% if connection.identities_revealed %}
+          {{ other.display_name }}
+          <div style="font-size: 11px; color: var(--muted); font-weight: normal; margin-top: 2px; text-transform: lowercase;">{{ other.email }}</div>
         {% else %}Anonymous connection{% endif %}
       </strong>
       <span>
@@ -34,13 +36,17 @@
   </header>
 
   {# ── IDENTITY / REVEAL PANEL ─────────────────────────────────────────────── #}
-  {% if connection.identities_revealed %}
+{% if connection.identities_revealed %}
     <div class="identity-banner">
       {% if other.photo %}<img src="{{ other.photo.url }}" class="enlargeable-photo" alt="Photo of {{ other.display_name }}">{% endif %}
       <div>
         <span class="eyebrow">Identity revealed</span>
-        <strong>{{ other.display_name }}</strong>
+        <strong>
+          {{ other.display_name }}
+          <div style="font-size: 13px; color: var(--pine); font-weight: 500; opacity: 0.8; margin-top: 2px; text-transform: lowercase;">{{ other.email }}</div>
+        </strong>
       </div>
+    </div>
     </div>
 
   {% elif reveal %}
