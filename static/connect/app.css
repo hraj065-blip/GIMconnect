@@ -14,11 +14,14 @@
   --ember: #c77a3d;
   --ember-dark: #8f4d23;
   --ember-soft: #f7e5d1;
-  --rose: #b85d63;
-  --rose-deep: #8c4348;
-  --rose-soft: #fae8e5;
-  --blush: #f3d6d3;
-  --rose-glow: rgba(184, 93, 93, .22);
+  --rose: #c96b8a;
+  --rose-deep: #9c4a68;
+  --rose-soft: #fbeaf0;
+  --blush: #f6dce6;
+  --rose-glow: rgba(201, 107, 138, .22);
+  --pink: #e88aa8;
+  --pink-soft: #fdeaf1;
+  --pink-glow: rgba(232, 138, 168, .24);
   --shadow: 0 18px 54px rgba(14, 38, 27, .11);
   --shadow-lg: 0 30px 90px rgba(8, 35, 25, .22);
   --radius: 28px;
@@ -47,7 +50,7 @@ a {
 }
 
 ::selection {
-  background: rgba(184, 93, 93, .26);
+  background: var(--pink-glow);
   color: var(--ink);
 }
 
@@ -100,11 +103,11 @@ button {
   font-family: "Playfair Display", Georgia, serif;
   font-size: 19px;
   font-style: italic;
-  transition: box-shadow .22s ease;
+  transition: box-shadow .3s cubic-bezier(.22, 1, .36, 1);
 }
 
 .brand:hover .brand-mark {
-  box-shadow: 0 0 0 5px rgba(184, 93, 93, .14);
+  box-shadow: 0 0 0 5px var(--pink-glow);
 }
 
 .top-nav {
@@ -167,7 +170,7 @@ button {
   font-size: 14px;
   font-weight: 700;
   letter-spacing: .1px;
-  transition: transform .18s ease, box-shadow .18s ease, background .18s ease, border-color .18s ease;
+  transition: transform .3s cubic-bezier(.22, 1, .36, 1), box-shadow .3s cubic-bezier(.22, 1, .36, 1), background .25s ease, border-color .25s ease;
 }
 
 .button:hover {
@@ -199,14 +202,14 @@ button {
 .button.rose {
   background: var(--rose);
   border-color: var(--rose);
-  color: #fff5f3;
-  box-shadow: 0 18px 40px rgba(184, 93, 93, .26);
+  color: #fff5f8;
+  box-shadow: 0 18px 40px var(--pink-glow);
 }
 
 .button.rose:hover {
-  background: #c46d72;
-  border-color: #c46d72;
-  box-shadow: 0 18px 44px rgba(184, 93, 93, .38);
+  background: #d97fa0;
+  border-color: #d97fa0;
+  box-shadow: 0 18px 48px rgba(201, 107, 138, .42);
 }
 
 /* ─────────────────────────── TYPE UTILS ────────────────────────── */
@@ -233,7 +236,7 @@ button {
 .landing-page {
   background:
     radial-gradient(circle at 8% 22%, rgba(199, 122, 61, .10), transparent 30%),
-    radial-gradient(circle at 88% 48%, rgba(184, 93, 99, .10), transparent 30%),
+    radial-gradient(circle at 88% 48%, rgba(201, 107, 138, .09), transparent 30%),
     var(--cream);
   overflow: hidden;
 }
@@ -242,6 +245,7 @@ button {
 
 .hero {
   min-height: calc(100vh - 76px);
+  min-height: calc(100dvh - 76px);
   width: 100%;
   max-width: none;
   margin: 0;
@@ -384,8 +388,8 @@ button {
 }
 
 .trust-row span:last-child::before {
-  background: #f0a8ad;
-  box-shadow: 0 0 0 4px rgba(184, 93, 93, .16);
+  background: #e88aa8;
+  box-shadow: 0 0 0 4px var(--pink-glow);
 }
 
 /* ─── HERO VISUAL ─────────────────────────────────────────────── */
@@ -421,7 +425,7 @@ button {
   height: 118px;
   border-radius: 50% 50% 12% 50%;
   transform: rotate(45deg);
-  background: linear-gradient(135deg, var(--ember), var(--rose) 78%, #f0bd78);
+  background: linear-gradient(135deg, var(--ember), var(--rose) 70%, #f0bd78);
   box-shadow:
     0 34px 90px rgba(199, 122, 61, .30),
     0 0 0 34px rgba(199, 122, 61, .09);
@@ -431,7 +435,7 @@ button {
 
 @keyframes pulse-spark {
   0%, 100% { box-shadow: 0 34px 90px rgba(199, 122, 61, .30), 0 0 0 34px rgba(199, 122, 61, .09); }
-  50%       { box-shadow: 0 34px 90px rgba(199, 122, 61, .46), 0 0 0 52px rgba(199, 122, 61, .05); }
+  50%       { box-shadow: 0 34px 90px rgba(201, 107, 138, .38), 0 0 0 52px rgba(201, 107, 138, .08); }
 }
 
 .anonymous-card {
@@ -472,8 +476,8 @@ button {
   bottom: 78px;
   left: 4px;
   transform: rotate(-5deg);
-  border-color: rgba(250, 210, 210, .26);
-  box-shadow: 0 28px 80px rgba(70, 18, 22, .30), inset 0 1px 0 rgba(255, 255, 255, .18);
+  border-color: rgba(232, 138, 168, .30);
+  box-shadow: 0 28px 80px rgba(140, 50, 80, .26), inset 0 1px 0 rgba(255, 255, 255, .18);
 }
 
 .avatar {
@@ -565,7 +569,7 @@ button {
   justify-content: flex-end;
   position: relative;
   overflow: hidden;
-  transition: transform .22s ease, box-shadow .22s ease, border-color .22s ease;
+  transition: transform .35s cubic-bezier(.22, 1, .36, 1), box-shadow .35s cubic-bezier(.22, 1, .36, 1), border-color .25s ease;
 }
 
 .feature.elevated::before {
@@ -584,7 +588,7 @@ button {
   box-shadow: var(--shadow);
 }
 
-.feature-glyph {
+.feature-num {
   width: 52px;
   height: 52px;
   display: grid;
@@ -595,11 +599,24 @@ button {
   margin-bottom: auto;
   flex-shrink: 0;
   align-self: flex-start;
-  transition: background .22s ease;
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: .5px;
+  transition: background .3s cubic-bezier(.22, 1, .36, 1);
 }
 
-.feature.elevated:hover .feature-glyph {
+.feature.elevated:hover .feature-num {
   background: #f5d9bc;
+}
+
+/* third card ("Reveal when ready") gets the rose treatment */
+.feature.elevated:nth-child(3) .feature-num {
+  background: var(--pink-soft);
+  color: var(--rose-deep);
+}
+
+.feature.elevated:nth-child(3):hover .feature-num {
+  background: #f8d3e2;
 }
 
 .feature h3,
@@ -724,7 +741,8 @@ button {
   padding-right: max(24px, calc((100vw - 1180px) / 2));
   background:
     linear-gradient(180deg, rgba(255, 249, 239, .20), rgba(255, 236, 214, .55), rgba(246, 241, 232, .20)),
-    radial-gradient(circle at 8% 0%, rgba(199, 122, 61, .14), transparent 28%);
+    radial-gradient(circle at 8% 0%, rgba(199, 122, 61, .14), transparent 28%),
+    radial-gradient(circle at 96% 100%, rgba(201, 107, 138, .12), transparent 30%);
   border-top: 1px solid rgba(199, 122, 61, .14);
   border-bottom: 1px solid rgba(199, 122, 61, .14);
 }
@@ -747,16 +765,25 @@ button {
   border-radius: 34px;
   background: rgba(255, 253, 248, .78);
   box-shadow: 0 20px 54px rgba(143, 77, 35, .08);
+  transition: transform .35s cubic-bezier(.22, 1, .36, 1), box-shadow .35s cubic-bezier(.22, 1, .36, 1);
+}
+
+.safety-card:hover {
+  transform: translateY(-4px);
 }
 
 .safety-card.featured {
   background:
     linear-gradient(145deg, rgba(28, 80, 63, .95), rgba(8, 35, 25, .98)),
-    radial-gradient(circle at 20% 0%, rgba(232, 168, 173, .26), transparent 35%);
+    radial-gradient(circle at 20% 0%, rgba(232, 138, 168, .28), transparent 35%);
   color: white;
   transform: translateY(-18px);
-  box-shadow: 0 30px 90px rgba(140, 67, 72, .20), 0 30px 90px rgba(8, 35, 25, .22);
-  border-color: rgba(184, 93, 93, .32);
+  box-shadow: 0 30px 90px rgba(156, 74, 104, .22), 0 30px 90px rgba(8, 35, 25, .22);
+  border-color: rgba(232, 138, 168, .36);
+}
+
+.safety-card.featured:hover {
+  transform: translateY(-22px);
 }
 
 .soft-icon {
@@ -773,7 +800,7 @@ button {
 
 .safety-card.featured .soft-icon {
   background: rgba(255, 255, 255, .14);
-  color: #f0bcc0;
+  color: #f5b8cf;
 }
 
 .safety-card h3 {
@@ -827,7 +854,7 @@ button {
   top: 20px;
   bottom: 20px;
   width: 2px;
-  background: linear-gradient(to bottom, var(--ember-soft), rgba(184, 93, 93, .42));
+  background: linear-gradient(to bottom, var(--ember-soft), rgba(201, 107, 138, .45));
   border-radius: 1px;
 }
 
@@ -849,7 +876,7 @@ button {
   border-radius: 50%;
   background: var(--ember-soft);
   border: 2.5px solid var(--ember);
-  transition: transform .2s ease;
+  transition: transform .3s cubic-bezier(.22, 1, .36, 1);
 }
 
 .timeline-step:hover .timeline-dot {
@@ -868,7 +895,7 @@ button {
   border-radius: 22px;
   background: rgba(255, 253, 248, .88);
   box-shadow: 0 8px 28px rgba(28, 80, 63, .06);
-  transition: transform .2s ease, box-shadow .2s ease;
+  transition: transform .3s cubic-bezier(.22, 1, .36, 1), box-shadow .3s cubic-bezier(.22, 1, .36, 1);
 }
 
 .timeline-step:hover .timeline-card {
@@ -877,13 +904,13 @@ button {
 }
 
 .card-rose {
-  border-color: rgba(184, 93, 93, .28);
+  border-color: rgba(201, 107, 138, .30);
   background: linear-gradient(135deg, rgba(255, 253, 248, .92), var(--blush));
-  box-shadow: 0 14px 40px rgba(140, 67, 72, .14);
+  box-shadow: 0 14px 40px rgba(156, 74, 104, .16);
 }
 
 .timeline-step:hover .card-rose {
-  box-shadow: 0 18px 48px rgba(140, 67, 72, .20);
+  box-shadow: 0 18px 48px rgba(156, 74, 104, .22);
 }
 
 .tl-step {
@@ -960,8 +987,8 @@ button {
   display: grid;
   place-items: center;
   border-radius: 50%;
-  background: rgba(184, 93, 99, .22);
-  color: #f6a8ac;
+  background: rgba(201, 107, 138, .22);
+  color: #f5b8cf;
   font-size: 13px;
   font-weight: 900;
   margin-top: 2px;
@@ -1138,6 +1165,7 @@ button {
 .auth-shell {
   max-width: 1100px;
   min-height: calc(100vh - 76px);
+  min-height: calc(100dvh - 76px);
   margin: auto;
   display: grid;
   grid-template-columns: 1fr 480px;
@@ -1202,7 +1230,7 @@ button {
   border-radius: 14px;
   background: var(--paper);
   color: var(--ink);
-  font-size: 15px;
+  font-size: 16px;
   transition: border-color .18s, box-shadow .18s;
   outline: none;
 }
@@ -1491,7 +1519,7 @@ button {
   display: flex;
   align-items: center;
   gap: 16px;
-  transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+  transition: transform .3s cubic-bezier(.22, 1, .36, 1), box-shadow .3s cubic-bezier(.22, 1, .36, 1), border-color .25s ease;
 }
 
 .connection-card:hover {
@@ -1627,6 +1655,7 @@ button {
   display: flex;
   flex-direction: column;
   height: calc(100vh - 76px);
+  height: calc(100dvh - 76px);
   border: 1px solid var(--line);
   border-radius: 22px;
   overflow: hidden;
@@ -1772,7 +1801,10 @@ button {
 }
 
 .messages {
+  flex: 1 1 auto;
+  min-height: 0;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   padding: 24px;
   background: #f2ece2;
 }
@@ -1829,19 +1861,29 @@ button {
 }
 
 .composer-wrap {
-  padding: 10px 14px 14px;
+  padding: 10px 14px max(14px, env(safe-area-inset-bottom));
   border-top: 1px solid var(--line);
   background: var(--paper);
 }
 
 .reveal-button {
   display: block;
-  margin: 0 auto 8px;
-  border: 0;
-  background: none;
-  color: var(--ember);
-  font-size: 11px;
+  margin: 0 auto 10px;
+  padding: 9px 20px;
+  border: 1.5px solid rgba(201, 107, 138, .35);
+  border-radius: 999px;
+  background: var(--pink-soft);
+  color: var(--rose-deep);
+  font-size: 11.5px;
   font-weight: 800;
+  letter-spacing: .3px;
+  transition: background .25s ease, transform .3s cubic-bezier(.22, 1, .36, 1), box-shadow .3s cubic-bezier(.22, 1, .36, 1);
+}
+
+.reveal-button:hover {
+  background: #f8d3e2;
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px var(--pink-glow);
 }
 
 .composer {
@@ -1911,10 +1953,6 @@ button {
 
   .top-nav {
     gap: 12px;
-  }
-
-  .top-nav > a:not(.button) {
-    display: none;
   }
 
   .hero {
@@ -2004,8 +2042,29 @@ button {
 }
 
 @media (max-width: 620px) {
+  .site-header {
+    padding: 0 14px;
+  }
+
   .brand span:last-child {
     font-size: 14px;
+  }
+
+  .top-nav {
+    gap: 7px;
+    font-size: 12.5px;
+    max-width: 64vw;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .top-nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .top-nav a:not(.button) {
+    white-space: nowrap;
   }
 
   .hero {
@@ -2135,5 +2194,80 @@ button {
 
   .faq-q {
     font-size: 14px;
+  }
+
+  /* Chat fills the screen edge-to-edge on mobile - floating margins on a
+     phone just steal vertical space from where it's scarcest (keyboard open) */
+  .chat-shell {
+    margin: 0;
+    border-radius: 0;
+    border-left: 0;
+    border-right: 0;
+    max-width: 100%;
+  }
+
+  /* Bigger, easier tap targets for the actions that matter most on mobile:
+     reveal accept/reject, end connection, block, report */
+  .inline-actions .button {
+    min-height: 40px;
+    padding: 0 16px;
+  }
+
+  .button.small {
+    min-height: 44px;
+  }
+
+  .menu summary {
+    padding: 10px 6px;
+    margin: -10px -6px;
+  }
+}
+
+/* ── VERY SMALL PHONES (iPhone SE / older Android, 360-390px) ──────────── */
+@media (max-width: 400px) {
+  /* Free up header width by dropping the wordmark - the G mark alone
+     still reads as the brand, and every nav link stays fully usable */
+  .brand span:last-child {
+    display: none;
+  }
+
+  .top-nav {
+    max-width: 72vw;
+    font-size: 12px;
+    gap: 6px;
+  }
+}
+
+/* ── TOUCH DEVICES: skip the default grey tap-flash, use a branded one ── */
+@media (pointer: coarse) {
+  a,
+  button,
+  .button,
+  .connection-card,
+  .history-list a {
+    -webkit-tap-highlight-color: rgba(28, 80, 63, .12);
+  }
+}
+
+/* ── Respect reduced-motion preference (also saves battery on mobile) ──── */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .orbit-two,
+  .spark,
+  .pulse,
+  .chat-anim {
+    animation: none !important;
+  }
+
+  .button,
+  .feature.elevated,
+  .safety-card,
+  .connection-card,
+  .timeline-dot,
+  .timeline-card {
+    transition: none !important;
   }
 }
