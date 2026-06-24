@@ -2,138 +2,215 @@
 {% block title %}Your connections{% endblock %}
 {% block content %}
 <section class="dashboard-shell">
-  
-  <!-- ── Mobile/Top Nav Action ── -->
+
+  <!-- ── Top nav ── -->
   <div class="dashboard-top-actions">
     <a href="{% url 'settings' %}" class="settings-nav-link">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="3"/>
+        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0
+                 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1
+                 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9
+                 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1
+                 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2
+                 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0
+                 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65
+                 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0
+                 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2
+                 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33
+                 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2
+                 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+      </svg>
       <span>Settings</span>
     </a>
   </div>
 
+  <!-- ── Head ── -->
   <div class="dashboard-head">
     <div>
       <span class="eyebrow">Your private corner</span>
       <h1>Hello, {{ user.display_name }}.</h1>
-      <p class="muted">You have {{ active_count }} of {{ user.connection_cap }} active connection{{ active_count|pluralize }}.</p>
+      <p class="muted">
+        You have {{ active_count }} of {{ user.connection_cap }}
+        active connection{{ active_count|pluralize }}.
+      </p>
     </div>
     <div class="status-pill {% if user.is_eligible %}ready{% endif %}">
       {% if user.is_eligible %}Ready to connect{% else %}Verification pending{% endif %}
     </div>
   </div>
 
-  <!-- ── Django Messages ── -->
   {% if messages %}
-    <div class="form-message-banner" style="margin-bottom: 24px;">
+    <div class="form-message-banner" style="margin-bottom:24px;">
       {% for message in messages %}
-        <p class="msg-{{ message.tags }}" style="margin: 0; padding: 12px; border-radius: 8px; font-size: 14px; background: var(--pine-soft); color: var(--pine); font-weight: 600;">
+        <p class="msg-{{ message.tags }}"
+           style="margin:0;padding:12px;border-radius:8px;font-size:14px;
+                  background:var(--pine-soft);color:var(--pine);font-weight:600;">
           {{ message }}
         </p>
       {% endfor %}
     </div>
   {% endif %}
 
-  <!-- ── SETUP PANEL ── -->
-  {% if not user.email_verified or user.photo_status != "approved" or not user.onboarding_complete %}
-    <div class="verification-panel" style="margin-bottom: 32px;">
+  {# ─────────────────────────────────────────────────────────────────────────
+     SETUP PANEL
+     Shown when the user is not yet eligible.
+
+     Eligibility rules differ by gender:
+       Men   → email verified  +  photo approved  +  onboarding complete
+       Women → email verified  +  onboarding complete   (photo is optional)
+
+     The template condition below mirrors the is_eligible property exactly.
+     If you change the model, update this condition too.
+  ──────────────────────────────────────────────────────────────────────────── #}
+  {% if not user.email_verified
+        or not user.onboarding_complete
+        or (user.gender == "M" and user.photo_status != "approved") %}
+
+    <div class="verification-panel" style="margin-bottom:32px;">
       <div>
         <span class="eyebrow">Account setup</span>
         <h2>Complete verification to enter the pool.</h2>
       </div>
+
+      <!-- Check list — photo step only shown to men -->
       <div class="check-list">
         <span class="{% if user.email_verified %}done{% endif %}">Email verified</span>
-        <span class="{% if user.photo_status == 'approved' %}done{% endif %}">Photo approved</span>
+        {% if user.gender == "M" %}
+          <span class="{% if user.photo_status == 'approved' %}done{% endif %}">Photo approved</span>
+        {% endif %}
         <span class="{% if user.onboarding_complete %}done{% endif %}">Guidelines accepted</span>
       </div>
-      
-      <div style="display: flex; gap: 12px; align-items: center; margin-top: 16px;">
+
+      <div style="display:flex;gap:12px;align-items:center;margin-top:16px;">
         {% if not user.email_verified %}
-          <form method="post" action="{% url 'resend_verification' %}" style="margin: 0;">
+          <form method="post" action="{% url 'resend_verification' %}" style="margin:0;">
             {% csrf_token %}
             <button class="button secondary small" type="submit">Resend email code</button>
           </form>
         {% endif %}
-        
         {% if not user.onboarding_complete %}
           <a class="button small" href="{% url 'onboarding' %}">Finish onboarding</a>
         {% endif %}
       </div>
 
-      <!-- ── PHOTO INSTRUCTIONS ── -->
-      {% if user.email_verified and user.photo_status != 'approved' %}
+      {# Photo section: ONLY for men, never blocks women #}
+      {% if user.gender == "M" and user.email_verified and user.photo_status != "approved" %}
         <div class="dashboard-photo-section">
-          {% if user.photo_status == 'pending' %}
+          {% if user.photo_status == "pending" and user.photo %}
+            {# Man has uploaded; waiting for admin approval #}
             <div class="pending-banner">
-              <span class="icon" style="font-size: 24px;">⏳</span>
+              <span class="icon" style="font-size:24px;">⏳</span>
               <div>
-                <strong style="display: block; font-size: 15px; margin-bottom: 4px;">Upload you photo for review</strong>
-                <p style="margin: 0; font-size: 13px; line-height: 1.5;">Your photo will be verified. You will be able to request connections as soon as you are approved.</p>
+                <strong style="display:block;font-size:15px;margin-bottom:4px;">
+                  Photo under review
+                </strong>
+                <p style="margin:0;font-size:13px;line-height:1.5;">
+                  Your verification selfie is being reviewed. You will be able to
+                  request connections as soon as it is approved.
+                </p>
               </div>
             </div>
           {% else %}
-            <!-- Redirects them to settings if they haven't uploaded or if rejected -->
+            {# Man has not yet uploaded a photo #}
             <div class="action-banner">
-              <span class="icon" style="font-size: 24px;">📸</span>
+              <span class="icon" style="font-size:24px;">📸</span>
               <div>
-                <strong style="display: block; font-size: 15px; margin-bottom: 4px;">Verification Selfie Required</strong>
-                <p style="margin: 0 0 14px; font-size: 13px; line-height: 1.5; color: var(--muted);">A clear photo of your face is required to verify your identity. It remains securely hidden until a mutual reveal in chat.</p>
+                <strong style="display:block;font-size:15px;margin-bottom:4px;">
+                  Verification selfie required
+                </strong>
+                <p style="margin:0 0 14px;font-size:13px;line-height:1.5;
+                           color:var(--muted);">
+                  A clear photo of your face is required to verify your identity.
+                  It stays hidden until a mutual reveal.
+                </p>
                 <a class="button small" href="{% url 'settings' %}">Upload in Settings</a>
               </div>
             </div>
           {% endif %}
         </div>
       {% endif %}
+
     </div>
 
-  <!-- ── CONNECTION PANEL (If fully verified) ── -->
+  {# ─────────────────────────────────────────────────────────────────────────
+     CONNECTION PANEL — user is fully eligible
+  ──────────────────────────────────────────────────────────────────────────── #}
   {% else %}
-    <div class="request-panel" style="margin-bottom: 32px;">
+
+    <div class="request-panel" style="margin-bottom:32px;">
       {% if waiting_request %}
         <div>
           <span class="pulse"></span>
           <strong>Looking for the right open spot</strong>
-          <p>Your lobby request expires and is refunded at {{ waiting_request.expires_at|date:"g:i A, M j" }}.</p>
+          <p>Your lobby request expires and is refunded at
+            {{ waiting_request.expires_at|date:"g:i A, M j" }}.</p>
         </div>
         <form method="post" action="{% url 'cancel_waiting_request' waiting_request.pk %}">
           {% csrf_token %}
           <button class="button secondary">Cancel request</button>
         </form>
+
+      {% elif can_request %}
+        <div>
+          <strong>Open a new conversation</strong>
+          <p>One intentional request. We will connect you when a compatible spot is available.</p>
+        </div>
+        <form method="post" action="{% url 'new_request' %}">
+          {% csrf_token %}
+          <button class="button">Request connection</button>
+        </form>
+
+      {% elif active_count >= user.connection_cap %}
+        <div>
+          <strong>Your connection spaces are full</strong>
+          <p>When one conversation ends, your next request window can begin.</p>
+        </div>
+
       {% else %}
-        {% if can_request %}
-          <div>
-            <strong>Open a new conversation</strong>
-            <p>One intentional request. We will connect you when a compatible spot is available.</p>
-          </div>
-          <form method="post" action="{% url 'new_request' %}">
-            {% csrf_token %}
-            <button class="button">Request connection</button>
-          </form>
-        {% elif active_count >= user.connection_cap %}
-          <div>
-            <strong>Your connection spaces are full</strong>
-            <p>When one conversation ends, your next request window can begin.</p>
-          </div>
-        {% else %}
-          <div>
-            <strong>Your next request is resting</strong>
-            <p>The rolling window opens again at {{ user.request_available_at|date:"g:i A, M j" }}.</p>
-          </div>
-        {% endif %}
+        <div>
+          <strong>Your next request is resting</strong>
+          <p>The rolling window opens again at
+            {{ user.request_available_at|date:"g:i A, M j" }}.</p>
+        </div>
       {% endif %}
     </div>
-  {% endif %}
 
+    {# ── Soft photo hint for women who haven't uploaded yet ────────────────
+       This is deliberately low-key: a gentle suggestion, not a requirement.
+       It only appears when the woman is fully eligible and has no photo on
+       file. It disappears the moment she uploads one.
+    ─────────────────────────────────────────────────────────────────────── #}
+    {% if user.gender == "F" and not user.photo %}
+      <div class="photo-soft-hint">
+        <span class="hint-icon">📷</span>
+        <div>
+          <strong>Add a photo — optional</strong>
+          <p>
+            Your photo stays completely hidden unless you choose a mutual identity reveal.
+            <a href="{% url 'settings' %}">Upload one in Settings</a> whenever you're ready.
+          </p>
+        </div>
+      </div>
+    {% endif %}
+
+  {% endif %}
+  {# end setup / connection panel #}
+
+  <!-- ── Active connections ── -->
   <div class="section-title">
     <h2>Active connections</h2>
     <span>{{ active_count }} open</span>
   </div>
-  
+
   <div class="connection-grid">
     {% for connection in active_connections %}
       <a class="connection-card" href="{% url 'chat' connection.pk %}">
-     <div class="anonymous-orb">
+        <div class="anonymous-orb">
           {% if connection.identities_revealed %}
-            {% if user == connection.man %}{{ connection.woman.display_name|first }}{% else %}{{ connection.man.display_name|first }}{% endif %}
+            {% if user == connection.man %}{{ connection.woman.display_name|first }}
+            {% else %}{{ connection.man.display_name|first }}{% endif %}
           {% else %}?{% endif %}
         </div>
         <div>
@@ -141,10 +218,16 @@
             {% if connection.identities_revealed %}
               {% if user == connection.man %}
                 {{ connection.woman.display_name }}
-                <span style="display: block; font-size: 12px; color: var(--muted); font-weight: normal; margin-top: 2px; text-transform: lowercase;">{{ connection.woman.email }}</span>
+                <span style="display:block;font-size:12px;color:var(--muted);
+                             font-weight:normal;margin-top:2px;text-transform:lowercase;">
+                  {{ connection.woman.email }}
+                </span>
               {% else %}
                 {{ connection.man.display_name }}
-                <span style="display: block; font-size: 12px; color: var(--muted); font-weight: normal; margin-top: 2px; text-transform: lowercase;">{{ connection.man.email }}</span>
+                <span style="display:block;font-size:12px;color:var(--muted);
+                             font-weight:normal;margin-top:2px;text-transform:lowercase;">
+                  {{ connection.man.email }}
+                </span>
               {% endif %}
             {% else %}
               Anonymous connection
@@ -164,7 +247,9 @@
   </div>
 
   {% if history %}
-    <div class="section-title" style="margin-top: 40px;"><h2>Recent history</h2></div>
+    <div class="section-title" style="margin-top:40px;">
+      <h2>Recent history</h2>
+    </div>
     <div class="history-list">
       {% for connection in history %}
         <a href="{% url 'chat' connection.pk %}">
@@ -174,10 +259,10 @@
       {% endfor %}
     </div>
   {% endif %}
+
 </section>
 
 <style>
-  /* Settings Link Styling */
   .dashboard-top-actions {
     display: flex;
     justify-content: flex-end;
@@ -199,13 +284,71 @@
   }
   .settings-nav-link:hover {
     background: var(--cream-2);
-    border-color: rgba(28, 80, 63, .38);
+    border-color: rgba(28,80,63,.38);
     color: var(--pine);
   }
 
-  /* Photo Banner Styling */
-  .dashboard-photo-section { margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--line); }
-  .pending-banner { display: flex; gap: 14px; background: var(--pine-soft); color: var(--pine); padding: 18px; border-radius: 14px; align-items: flex-start; }
-  .action-banner { display: flex; gap: 14px; background: var(--paper); padding: 20px; border-radius: 14px; border: 1px solid var(--line); align-items: flex-start; box-shadow: 0 4px 20px rgba(0,0,0,0.03); }
+  /* Photo panels inside the male verification panel */
+  .dashboard-photo-section {
+    margin-top: 24px;
+    padding-top: 24px;
+    border-top: 1px solid var(--line);
+  }
+  .pending-banner {
+    display: flex;
+    gap: 14px;
+    background: var(--pine-soft);
+    color: var(--pine);
+    padding: 18px;
+    border-radius: 14px;
+    align-items: flex-start;
+  }
+  .action-banner {
+    display: flex;
+    gap: 14px;
+    background: var(--paper);
+    padding: 20px;
+    border-radius: 14px;
+    border: 1px solid var(--line);
+    align-items: flex-start;
+    box-shadow: 0 4px 20px rgba(0,0,0,.03);
+  }
+
+  /* Soft photo hint for women — intentionally quieter than a banner */
+  .photo-soft-hint {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 28px;
+    padding: 14px 18px;
+    background: var(--cream);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+  }
+  .photo-soft-hint .hint-icon {
+    font-size: 20px;
+    flex-shrink: 0;
+    margin-top: 2px;
+    opacity: .72;
+  }
+  .photo-soft-hint strong {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 4px;
+  }
+  .photo-soft-hint p {
+    margin: 0;
+    font-size: 12.5px;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+  .photo-soft-hint a {
+    color: var(--pine);
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
 </style>
 {% endblock %}
