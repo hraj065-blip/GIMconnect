@@ -71,29 +71,27 @@ class User(AbstractUser):
     def is_suspended(self):
         return bool(self.suspended_until and self.suspended_until > timezone.now())
 
- 
-@property
-def is_eligible(self):
-    """
-    Gate that controls whether a user can enter the matching pool.
- 
-    Men   → must have a verified email, admin-approved photo, completed
-            onboarding, and no active block/suspension.
-    Women → photo is entirely optional and never blocks eligibility.
-            Only email verification + onboarding + no block/suspension
-            are required. Photo upload is encouraged but voluntary.
-    """
-    base = (
-        self.email_verified
-        and self.onboarding_complete
-        and not self.is_blocked
-        and not self.is_suspended
-    )
-    if self.gender == self.Gender.MAN:
-        return base and self.photo_status == self.PhotoStatus.APPROVED
-    # Women enter the pool immediately after email + onboarding.
-    return base
- 
+    @property
+    def is_eligible(self):
+        """
+        Gate that controls whether a user can enter the matching pool.
+
+        Men   → must have a verified email, admin-approved photo, completed
+                onboarding, and no active block/suspension.
+        Women → photo is entirely optional and never blocks eligibility.
+                Only email verification + onboarding + no block/suspension
+                are required. Photo upload is encouraged but voluntary.
+        """
+        base = (
+            self.email_verified
+            and self.onboarding_complete
+            and not self.is_blocked
+            and not self.is_suspended
+        )
+        if self.gender == self.Gender.MAN:
+            return base and self.photo_status == self.PhotoStatus.APPROVED
+        # Women enter the pool immediately after email + onboarding.
+        return base
 
     @property
     def connection_cap(self):
