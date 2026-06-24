@@ -53,7 +53,7 @@
     </div>
   {% endif %}
 
-  {# ─────────────────────────────────────────────────────────────────────────
+  {% comment %}
      SETUP PANEL
      Shown when the user is not yet eligible.
 
@@ -63,10 +63,8 @@
 
      The template condition below mirrors the is_eligible property exactly.
      If you change the model, update this condition too.
-  ──────────────────────────────────────────────────────────────────────────── #}
-  {% if not user.email_verified
-        or not user.onboarding_complete
-        or (user.gender == "M" and user.photo_status != "approved") %}
+  {% endcomment %}
+  {% if not user.email_verified or not user.onboarding_complete or user.gender == "M" and user.photo_status != "approved" %}
 
     <div class="verification-panel" style="margin-bottom:32px;">
       <div>
@@ -95,11 +93,11 @@
         {% endif %}
       </div>
 
-      {# Photo section: ONLY for men, never blocks women #}
+      {% comment %}Photo section: ONLY for men, never blocks women{% endcomment %}
       {% if user.gender == "M" and user.email_verified and user.photo_status != "approved" %}
         <div class="dashboard-photo-section">
           {% if user.photo_status == "pending" and user.photo %}
-            {# Man has uploaded; waiting for admin approval #}
+            {% comment %}Man has uploaded; waiting for admin approval{% endcomment %}
             <div class="pending-banner">
               <span class="icon" style="font-size:24px;">⏳</span>
               <div>
@@ -113,7 +111,7 @@
               </div>
             </div>
           {% else %}
-            {# Man has not yet uploaded a photo #}
+            {% comment %}Man has not yet uploaded a photo{% endcomment %}
             <div class="action-banner">
               <span class="icon" style="font-size:24px;">📸</span>
               <div>
@@ -134,9 +132,9 @@
 
     </div>
 
-  {# ─────────────────────────────────────────────────────────────────────────
+  {% comment %}
      CONNECTION PANEL — user is fully eligible
-  ──────────────────────────────────────────────────────────────────────────── #}
+  {% endcomment %}
   {% else %}
 
     <div class="request-panel" style="margin-bottom:32px;">
@@ -177,11 +175,12 @@
       {% endif %}
     </div>
 
-    {# ── Soft photo hint for women who haven't uploaded yet ────────────────
+    {% comment %}
+       Soft photo hint for women who haven't uploaded yet.
        This is deliberately low-key: a gentle suggestion, not a requirement.
        It only appears when the woman is fully eligible and has no photo on
        file. It disappears the moment she uploads one.
-    ─────────────────────────────────────────────────────────────────────── #}
+    {% endcomment %}
     {% if user.gender == "F" and not user.photo %}
       <div class="photo-soft-hint">
         <span class="hint-icon">📷</span>
@@ -196,7 +195,7 @@
     {% endif %}
 
   {% endif %}
-  {# end setup / connection panel #}
+  {% comment %}end setup / connection panel{% endcomment %}
 
   <!-- ── Active connections ── -->
   <div class="section-title">
