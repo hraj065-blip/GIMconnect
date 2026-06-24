@@ -1,3 +1,4 @@
+
 """
 GIM Connect – views.py
 ======================
@@ -685,18 +686,42 @@ def resend_verification(request):
 
 @login_required
 @login_required
+# ─────────────────────────────────────────────────────────────────────────────
+# PATCH: replace the account_settings view with this version.
+# The only change is in the photo-upload feedback message.
+#
+# Previously the message said "Your account is temporarily pending" for all
+# users. For women, this is inaccurate — a pending photo never blocks their
+# eligibility. The message now differs by gender.
+# ─────────────────────────────────────────────────────────────────────────────
+
+@login_required
 def account_settings(request):
-    # Added request.FILES here to catch the Cloudinary image upload
     form = SettingsForm(request.POST or None, request.FILES or None, instance=request.user)
 
     if request.method == "POST" and form.is_valid():
         user = form.save(commit=False)
-        
-        # If they uploaded a new photo, revert their status to pending for admin review
-        if 'photo' in form.changed_data:
+
+        if "photo" in form.changed_data:
             user.photo_status = User.PhotoStatus.PENDING
-            messages.info(request, "Your new photo has been submitted for review. Your account is temporarily pending.")
-            
+
+            # The feedback message differs by gender.
+            # For men, a pending photo blocks eligibility — they need to know.
+            # For women, photo is optional and never blocks — don't alarm them.
+            if user.gender == User.Gender.MAN:
+                messages.info(
+                    request,
+                    "Your new photo has been submitted for review. "
+                    "Your account is temporarily pending until it is approved.",
+                )
+            else:
+                messages.info(
+                    request,
+                    "Your photo has been submitted for review. "
+                    "It will appear during identity reveals once approved. "
+                    "Your connections are not affected.",
+                )
+
         user.save()
         update_session_auth_hash(request, user)
         messages.success(request, "Settings updated successfully.")
