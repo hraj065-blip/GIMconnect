@@ -42,15 +42,15 @@ INSTALLED_APPS = [
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
-    "cloudinary_storage",          # <--- CLOUDINARY STORAGE
     "django.contrib.staticfiles",
+    "cloudinary_storage",          # Media storage only; keep Django's collectstatic command active.
     "cloudinary",                  # <--- CLOUDINARY API
     "connect",
 ]
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
-    "whitenoise.middleware.WhiteNoiseMiddleware",  # <--- RESTORED WHITENOISE HERE
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -119,6 +119,7 @@ SESSION_SAVE_EVERY_REQUEST = False
 # ---------------------------------------------------------------------------
 # Internationalisation & Static Files
 # ---------------------------------------------------------------------------
+
 LANGUAGE_CODE = "en-us"
 TIME_ZONE = "Asia/Kolkata"
 USE_I18N = True
@@ -126,25 +127,31 @@ USE_TZ = True
 
 STATIC_URL = "/static/"
 
-# Force Django to look in the root "static" folder
-STATICFILES_DIRS = [BASE_DIR / "static"]
+_static_src = BASE_DIR / "static"
+STATICFILES_DIRS = [_static_src] if _static_src.exists() else []
 
 STATIC_ROOT = BASE_DIR / "staticfiles"
+
+# Let WhiteNoise serve collected files from STATIC_ROOT and, as a fallback,
+# source files from Django static finders inside Vercel's serverless bundle.
+WHITENOISE_USE_FINDERS = True
 
 # ---------------------------------------------------------------------------
 # Media & Storage (Cloudinary config)
 # ---------------------------------------------------------------------------
+
 STORAGES = {
     "default": {
-        "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage", 
+        "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage", # <--- THIS WAS THE MISSING PIECE
     },
     "staticfiles": {
-        # Changed from CompressedManifestStaticFilesStorage
-        "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage", 
+        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
     },
 }
 
-# Removed the old STATICFILES_STORAGE variable as it conflicts with STORAGES in Django 5.2
+# Compatibility for django-cloudinary-storage's collectstatic command on
+# Django versions that prefer STORAGES.
+STATICFILES_STORAGE = "django.contrib.staticfiles.storage.StaticFilesStorage"
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"

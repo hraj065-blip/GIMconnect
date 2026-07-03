@@ -1,5 +1,6 @@
 {
   "version": 2,
+  "buildCommand": "chmod +x build.sh && ./build.sh",
   "builds": [
     {
       "src": "gim_connect/wsgi.py",
@@ -8,15 +9,27 @@
         "maxLambdaSize": "50mb",
         "maxDuration": 25,
         "includeFiles": [
-          "staticfiles/**",
+          "gim_connect/**",
+          "connect/**",
           "templates/**",
+          "static/**",
+          "staticfiles/**",
           "favicon.ico",
-          "robots.txt"
+          "robots.txt",
+          "manage.py"
         ]
       }
     }
   ],
   "routes": [
+    {
+      "src": "/favicon.ico",
+      "dest": "/favicon.ico"
+    },
+    {
+      "src": "/robots.txt",
+      "dest": "/robots.txt"
+    },
     {
       "src": "/(.*)",
       "dest": "gim_connect/wsgi.py"
