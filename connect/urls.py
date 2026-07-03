@@ -17,6 +17,7 @@ urlpatterns = [
     ),
     path("logout/", auth_views.LogoutView.as_view(), name="logout"),
     path("onboarding/", views.onboarding, name="onboarding"),
+    path("app/availability/toggle/", views.toggle_availability, name="toggle_availability"),
     path("app/", views.dashboard, name="dashboard"),
     path("app/request/", views.new_request, name="new_request"),
     path("app/request/<int:pk>/cancel/", views.cancel_waiting_request, name="cancel_request"),
