@@ -47,20 +47,18 @@ def _currently_connected(a, b):
 
 def _eligible_candidates(requester, now):
     opposite = User.Gender.WOMAN if requester.gender == User.Gender.MAN else User.Gender.MAN
-
-    # Photo approval is only required for men — women enter the pool without it.
-    # This mirrors the is_eligible property on the User model. Both must stay
-    # in sync: if the model gate changes, change the DB filter here too.
+ 
     base_filters = dict(
         gender=opposite,
         email_verified=True,
         onboarding_complete=True,
         is_blocked=False,
         is_active=True,
+        is_available=True,          # ← NEW: paused users excluded from pool
     )
     if opposite == User.Gender.MAN:
         base_filters["photo_status"] = User.PhotoStatus.APPROVED
-
+ 
     candidates = User.objects.filter(**base_filters).exclude(pk=requester.pk)
     candidates = candidates.annotate(
         active_total=Count(
