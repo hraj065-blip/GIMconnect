@@ -84,9 +84,7 @@
   {% endif %}
 
   {# ─── SETUP PANEL (not yet eligible) ─── #}
-  {% if not user.email_verified
-        or not user.onboarding_complete
-        or (user.gender == "M" and user.photo_status != "approved") %}
+  {% if not user.email_verified or not user.onboarding_complete or user.gender == "M" and user.photo_status != "approved" %}
 
     <div class="verification-panel" style="margin-bottom:32px;">
       <div>
