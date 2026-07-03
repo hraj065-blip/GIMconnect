@@ -269,9 +269,10 @@ def dashboard(request):
 
     can_request = (
         request.user.is_eligible
-        and active_count < request.user.connection_cap
-        and request_ready
-    )
+        and request.user.is_available        # ← NEW
+        and active.count() < request.user.connection_cap
+        and request.user.request_available_at <= timezone.now()
+    ),
 
     return render(
         request,
@@ -728,3 +729,32 @@ def account_settings(request):
         return redirect("settings")
 
     return render(request, "connect/settings.html", {"form": form})
+@login_required
+@require_POST
+def toggle_availability(request):
+    """Flip the user's is_available flag.
+    When pausing, any pending lobby request is cancelled automatically so the
+    user doesn't get matched while they've asked not to be."""
+    user = request.user
+    going_available = not user.is_available     # the NEW state after the toggle
+    user.is_available = going_available
+    user.save(update_fields=["is_available"])
+ 
+    if not going_available:
+        # Cancel a pending lobby request if one exists — no point staying in
+        # the queue while matching is paused.
+        pending = ConnectionRequest.objects.filter(
+            requester=user,
+            status=ConnectionRequest.Status.QUEUED,
+        ).first()
+        if pending:
+            try:
+                cancel_request(pending)
+            except ValidationError:
+                pass
+        messages.info(request, "Matching paused. Your active conversations continue normally.")
+    else:
+        messages.success(request, "You're back in the pool. New connections can start again.")
+ 
+    return redirect("dashboard")
+ 
