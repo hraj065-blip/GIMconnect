@@ -119,7 +119,6 @@ SESSION_SAVE_EVERY_REQUEST = False
 # ---------------------------------------------------------------------------
 # Internationalisation & Static Files
 # ---------------------------------------------------------------------------
-
 LANGUAGE_CODE = "en-us"
 TIME_ZONE = "Asia/Kolkata"
 USE_I18N = True
@@ -127,8 +126,8 @@ USE_TZ = True
 
 STATIC_URL = "/static/"
 
-_static_src = BASE_DIR / "static"
-STATICFILES_DIRS = [_static_src] if _static_src.exists() else []
+# Force Django to look in the root "static" folder
+STATICFILES_DIRS = [BASE_DIR / "static"]
 
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
