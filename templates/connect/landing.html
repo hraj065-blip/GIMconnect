@@ -8,8 +8,14 @@
       <span class="eyebrow">Made only for GIM</span>
       <h1>Meet the mind.<br><em>Then meet the person.</em></h1>
       <p class="lede">An intentional, anonymous-first way to connect with someone on campus. No profiles. No swiping. No public pressure.</p>
+      <div class="romance-pills" aria-label="GIM Connect vibe">
+        <span>Slow-burn chemistry</span>
+        <span>Campus crushes</span>
+        <span>Private first hellos</span>
+      </div>
       <div class="actions">
         <a class="button hero-button" href="{% url 'signup' %}">Join with GIM email</a>
+        <a class="button secondary hero-secondary" href="{% url 'android_download' %}">Download Android App</a>
         <a class="text-link" href="#how">See how it works ↓</a>
       </div>
       <div class="trust-row">
@@ -32,6 +38,11 @@
         <span class="avatar warm">?</span>
         <strong>No profile to judge</strong>
         <small>Just a conversation worth having.</small>
+      </div>
+      <div class="anonymous-card card-c">
+        <span class="avatar rose">♥</span>
+        <strong>Mutual reveal</strong>
+        <small>When the spark feels real, both identities open together.</small>
       </div>
     </div>
   </section>
@@ -227,7 +238,10 @@
     <span class="eyebrow light">A private hello can become something real</span>
     <h2>Ready to meet someone differently?</h2>
     <p>Join the campus pool, verify once, and start with the part that actually matters: a conversation.</p>
-    <a class="button light-button" href="{% url 'signup' %}">Create your account</a>
+    <div class="cta-actions">
+      <a class="button light-button" href="{% url 'signup' %}">Create your account</a>
+      <a class="button light-outline-button" href="{% url 'android_download' %}">Download Android App</a>
+    </div>
   </section>
 
 </div>

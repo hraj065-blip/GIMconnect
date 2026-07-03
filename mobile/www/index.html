@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>GIM Connect</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --pine: #0f2f24;
+      --pine-2: #1f5a43;
+      --cream: #f6f1e8;
+      --paper: #fffdf8;
+      --muted: #78847e;
+      --ember: #c77a3d;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      min-height: 100vh;
+      margin: 0;
+      display: grid;
+      place-items: center;
+      padding: 28px;
+      background:
+        radial-gradient(circle at top left, rgba(199, 122, 61, .22), transparent 36%),
+        linear-gradient(135deg, #0b2119, var(--pine));
+      color: var(--paper);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    main {
+      width: min(420px, 100%);
+      padding: 34px 28px;
+      border: 1px solid rgba(255, 255, 255, .14);
+      border-radius: 28px;
+      background: rgba(255, 253, 248, .10);
+      box-shadow: 0 30px 90px rgba(0, 0, 0, .25);
+      backdrop-filter: blur(20px);
+      text-align: center;
+    }
+
+    .mark {
+      width: 58px;
+      height: 58px;
+      display: grid;
+      place-items: center;
+      margin: 0 auto 18px;
+      border-radius: 50%;
+      background: var(--paper);
+      color: var(--pine);
+      font-family: Georgia, serif;
+      font-size: 30px;
+      font-style: italic;
+      font-weight: 700;
+    }
+
+    h1 {
+      margin: 0 0 10px;
+      font-size: 30px;
+      letter-spacing: -.9px;
+    }
+
+    p {
+      margin: 0 0 22px;
+      color: rgba(255, 253, 248, .78);
+      line-height: 1.65;
+    }
+
+    a, button {
+      min-height: 48px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      border: 0;
+      border-radius: 999px;
+      background: var(--ember);
+      color: #fff8ed;
+      font: inherit;
+      font-weight: 750;
+      text-decoration: none;
+    }
+
+    .hint {
+      margin-top: 16px;
+      color: rgba(255, 253, 248, .62);
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="mark">G</div>
+    <h1>GIM Connect</h1>
+    <p>If the app does not open automatically, check your connection and try again.</p>
+    <a href="https://gimconnect.vercel.app/">Open GIM Connect</a>
+    <div class="hint">Anonymous first. Mutual by design.</div>
+  </main>
+</body>
+</html>

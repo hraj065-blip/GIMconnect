@@ -50,7 +50,6 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
-    "whitenoise.middleware.WhiteNoiseMiddleware",  # <--- WhiteNoise serves the CSS
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -82,12 +81,16 @@ TEMPLATES = [
     },
 ]
 
-# conn_max_age=0 prevents Vercel Serverless from exhausting DB connections
+_DATABASE_URL = os.environ.get("DATABASE_URL")
+
+# conn_max_age=0 prevents Vercel Serverless from exhausting DB connections.
+# Only require SSL when a real external DATABASE_URL is configured; local/test
+# SQLite does not understand PostgreSQL's sslmode option.
 DATABASES = {
     "default": dj_database_url.config(
-        default=os.environ.get("DATABASE_URL", f"sqlite:///{BASE_DIR / 'db.sqlite3'}"),
+        default=_DATABASE_URL or f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
         conn_max_age=0,
-        ssl_require=not DEBUG,
+        ssl_require=bool(_DATABASE_URL) and not DEBUG,
     )
 }
 
@@ -128,9 +131,6 @@ STATICFILES_DIRS = [_static_src] if _static_src.exists() else []
 
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
-# Forces WhiteNoise to dynamically scan your code instead of looking for a missing folder
-WHITENOISE_USE_FINDERS = True
-
 # ---------------------------------------------------------------------------
 # Media & Storage (Cloudinary config)
 # ---------------------------------------------------------------------------
@@ -143,6 +143,10 @@ STORAGES = {
         "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
     },
 }
+
+# Compatibility for django-cloudinary-storage's collectstatic command on
+# Django versions that prefer STORAGES.
+STATICFILES_STORAGE = "django.contrib.staticfiles.storage.StaticFilesStorage"
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
@@ -177,6 +181,8 @@ GIM_ALLOWED_EMAIL_DOMAINS = [
 ]
 
 AI_BOOTSTRAP_ENABLED = False
+FIREBASE_SERVICE_ACCOUNT_JSON = os.environ.get("FIREBASE_SERVICE_ACCOUNT_JSON", "").strip()
+FCM_PROJECT_ID = os.environ.get("FCM_PROJECT_ID", "").strip()
 
 # ---------------------------------------------------------------------------
 # CSRF Trusted Origins (Crucial for Vercel Forms)
@@ -198,7 +204,7 @@ if _custom_domain:
 
 if not DEBUG:
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
-    SECURE_SSL_REDIRECT = os.environ.get("DJANGO_SECURE_SSL_REDIRECT", "1") == "1"
+    SECURE_SSL_REDIRECT = os.environ.get("DJANGO_SECURE_SSL_REDIRECT", "0") == "1"
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
     SECURE_HSTS_SECONDS = int(os.environ.get("DJANGO_SECURE_HSTS_SECONDS", "3600"))

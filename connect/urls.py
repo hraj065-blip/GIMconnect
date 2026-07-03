@@ -8,6 +8,7 @@ from . import views
 
 urlpatterns = [
     path("", views.landing, name="landing"),
+    path("android/", views.android_download, name="android_download"),
     path("signup/", views.signup, name="signup"),
     path("verify/", views.verify_email, name="verify_email"),
     path(
@@ -34,4 +35,6 @@ urlpatterns = [
     path("app/settings/", views.account_settings, name="settings"),
     path("verify/resend/", views.resend_verification, name="resend_verification"),
     path('chat/reveal/<int:pk>/abort/', views.reveal_abort, name='reveal_abort'),
+    path("api/mobile/push-token/", views.register_push_token, name="register_push_token"),
+    path("api/mobile/push-token/remove/", views.unregister_push_token, name="unregister_push_token"),
 ]

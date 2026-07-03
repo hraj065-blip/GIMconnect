@@ -12,13 +12,28 @@
           "gim_connect/**",
           "connect/**",
           "templates/**",
-          "staticfiles/**", 
+          "static/**",
+          "staticfiles/**",
+          "favicon.ico",
+          "robots.txt",
           "manage.py"
         ]
       }
     }
   ],
   "routes": [
+    {
+      "src": "/static/(.*)",
+      "dest": "/staticfiles/$1"
+    },
+    {
+      "src": "/favicon.ico",
+      "dest": "/favicon.ico"
+    },
+    {
+      "src": "/robots.txt",
+      "dest": "/robots.txt"
+    },
     {
       "src": "/(.*)",
       "dest": "gim_connect/wsgi.py"

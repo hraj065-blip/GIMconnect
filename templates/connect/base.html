@@ -10,7 +10,7 @@
    <script defer src="/_vercel/insights/script.js"></script>
   <link rel="icon" href="/favicon.ico" type="image/x-icon">
 </head>
-<body>
+<body data-authenticated="{{ user.is_authenticated|yesno:'true,false' }}">
   <header class="site-header">
     <a class="brand" href="{% url 'landing' %}">
       <span class="brand-mark">G</span>
@@ -19,10 +19,12 @@
     <nav class="top-nav">
       {% if user.is_authenticated %}
         <a href="{% url 'dashboard' %}">Connections</a>
+        <a href="{% url 'android_download' %}">Android App</a>
         <a href="{% url 'settings' %}">Settings</a>
         {% if user.is_staff %}<a href="/admin/">Admin</a>{% endif %}
         <form action="{% url 'logout' %}" method="post">{% csrf_token %}<button class="link-button">Log out</button></form>
       {% else %}
+        <a href="{% url 'android_download' %}">Android App</a>
         <a href="{% url 'login' %}">Log in</a>
         <a class="button small" href="{% url 'signup' %}">Join campus</a>
       {% endif %}
@@ -37,6 +39,7 @@
 
   <main>{% block content %}{% endblock %}</main>
   <footer class="site-footer"><span>GIM Connect</span><span>Anonymous first. Mutual by design.</span></footer>
+  <script defer src="{% static 'connect/mobile_bridge.js' %}"></script>
   {% block scripts %}{% endblock %}
 </body>
 </html>

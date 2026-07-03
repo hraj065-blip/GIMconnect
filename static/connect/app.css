@@ -321,6 +321,25 @@ button {
   font-weight: 400;
 }
 
+.romance-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+  margin-top: 22px;
+}
+
+.romance-pills span {
+  padding: 8px 12px;
+  border: 1px solid rgba(255, 228, 191, .24);
+  border-radius: 999px;
+  background: linear-gradient(135deg, rgba(255, 228, 191, .13), rgba(232, 138, 168, .12));
+  color: rgba(255, 248, 237, .90);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: .1px;
+  box-shadow: 0 12px 34px rgba(0, 0, 0, .10);
+}
+
 .actions {
   margin: 38px 0 30px;
   display: flex;
@@ -343,6 +362,20 @@ button {
   background: #d68745;
   border-color: #d68745;
   box-shadow: 0 18px 44px rgba(199, 122, 61, .36);
+}
+
+.hero-secondary {
+  min-height: 52px;
+  border-color: rgba(255, 253, 248, .32);
+  color: #fffdf8;
+  background: rgba(255, 253, 248, .10);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+.hero-secondary:hover {
+  background: rgba(255, 253, 248, .18);
+  box-shadow: 0 18px 44px rgba(0, 0, 0, .16);
 }
 
 .text-link {
@@ -480,6 +513,14 @@ button {
   box-shadow: 0 28px 80px rgba(140, 50, 80, .26), inset 0 1px 0 rgba(255, 255, 255, .18);
 }
 
+.card-c {
+  right: 48px;
+  bottom: 6px;
+  transform: rotate(2.5deg);
+  border-color: rgba(255, 209, 151, .32);
+  background: linear-gradient(135deg, rgba(255, 253, 248, .18), rgba(232, 138, 168, .12));
+}
+
 .avatar {
   width: 44px;
   height: 44px;
@@ -495,6 +536,11 @@ button {
 
 .avatar.warm {
   background: rgba(199, 122, 61, .48);
+}
+
+.avatar.rose {
+  background: rgba(201, 107, 138, .50);
+  color: #fff4f8;
 }
 
 @keyframes spin {
@@ -1139,6 +1185,24 @@ button {
 .light-button:hover {
   background: white;
   box-shadow: 0 16px 36px rgba(0, 0, 0, .22);
+}
+
+.light-outline-button {
+  border-color: rgba(255, 253, 248, .44);
+  background: rgba(255, 253, 248, .10);
+  color: #fffdf8;
+}
+
+.light-outline-button:hover {
+  background: rgba(255, 253, 248, .18);
+  box-shadow: 0 18px 46px rgba(0, 0, 0, .14);
+}
+
+.cta-actions {
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  flex-wrap: wrap;
 }
 
 /* ─── FOOTER ─────────────────────────────────────────────────── */
@@ -2269,5 +2333,255 @@ button {
   .timeline-dot,
   .timeline-card {
     transition: none !important;
+  }
+}
+
+/* ─────────────────────── Native Android App Bridge ─────────────────────── */
+
+.native-app:not(.native-insets-managed) body {
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.mobile-network-banner,
+.mobile-push-banner,
+.mobile-notification-card {
+  position: fixed;
+  left: 50%;
+  z-index: 1200;
+  width: min(420px, calc(100% - 28px));
+  border: 1px solid rgba(255, 255, 255, .18);
+  border-radius: 18px;
+  background: rgba(15, 47, 36, .94);
+  color: #fffdf8;
+  box-shadow: 0 18px 50px rgba(15, 47, 36, .28);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+.mobile-network-banner {
+  bottom: calc(18px + env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  padding: 13px 16px;
+  font-size: 13px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.mobile-push-banner {
+  top: calc(16px + env(safe-area-inset-top));
+  display: grid;
+  gap: 3px;
+  transform: translateX(-50%);
+  padding: 14px 16px;
+  border: 0;
+  font: inherit;
+  text-align: left;
+}
+
+.mobile-push-banner strong {
+  color: #fffdf8;
+  font-size: 14px;
+}
+
+.mobile-push-banner span {
+  color: rgba(255, 253, 248, .78);
+  font-size: 13px;
+}
+
+.mobile-notification-card {
+  right: auto;
+  bottom: calc(18px + env(safe-area-inset-bottom));
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 14px;
+  align-items: center;
+  transform: translateX(-50%);
+  padding: 15px 16px;
+}
+
+.mobile-notification-card strong {
+  display: block;
+  color: #fffdf8;
+  font-size: 14px;
+}
+
+.mobile-notification-card p {
+  margin: 3px 0 0;
+  color: rgba(255, 253, 248, .74);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.mobile-notification-card button {
+  min-height: 38px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 999px;
+  background: #fff8ed;
+  color: var(--pine);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.is-offline .mobile-notification-card {
+  bottom: calc(76px + env(safe-area-inset-bottom));
+}
+
+/* ───────────────────────── Android Download Page ───────────────────────── */
+
+.download-shell {
+  width: min(1180px, calc(100% - 48px));
+  margin: 0 auto;
+  padding: 76px 0 110px;
+}
+
+.download-hero-card {
+  min-height: 520px;
+  position: relative;
+  overflow: hidden;
+  display: grid;
+  align-content: center;
+  padding: clamp(34px, 7vw, 82px);
+  border-radius: 42px;
+  background:
+    linear-gradient(120deg, rgba(8, 35, 25, .96), rgba(18, 69, 51, .84)),
+    url("gim-campus.png") center / cover no-repeat;
+  box-shadow: var(--shadow-lg);
+}
+
+.download-hero-card::after {
+  content: "";
+  position: absolute;
+  inset: auto -12% -45% 52%;
+  height: 360px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(199, 122, 61, .36), transparent 68%);
+  pointer-events: none;
+}
+
+.download-hero-card > * {
+  position: relative;
+  z-index: 1;
+}
+
+.download-hero-card h1 {
+  max-width: 760px;
+  margin: 16px 0 20px;
+  color: #fffdf8;
+  font-size: clamp(44px, 6vw, 82px);
+  line-height: .95;
+  letter-spacing: -4px;
+}
+
+.download-hero-card p {
+  max-width: 650px;
+  color: rgba(255, 253, 248, .78);
+  font-size: 17px;
+  line-height: 1.75;
+}
+
+.download-actions {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin: 30px 0 10px;
+}
+
+.download-note {
+  margin: 10px 0 0;
+  font-size: 13px;
+}
+
+.install-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+  margin: 28px 0;
+}
+
+.install-card,
+.download-safety-card {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: rgba(255, 253, 248, .84);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, .7) inset;
+}
+
+.install-card {
+  min-height: 230px;
+  padding: 28px;
+}
+
+.install-card span {
+  display: inline-grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  margin-bottom: 34px;
+  border-radius: 16px;
+  background: var(--ember-soft);
+  color: var(--ember-dark);
+  font-weight: 900;
+  font-size: 13px;
+}
+
+.install-card h2 {
+  margin: 0 0 12px;
+  font-size: 23px;
+  letter-spacing: -.8px;
+}
+
+.install-card p,
+.download-safety-card p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.download-safety-card {
+  display: grid;
+  grid-template-columns: .8fr 1fr;
+  gap: 28px;
+  align-items: center;
+  padding: 34px;
+}
+
+.download-safety-card h2 {
+  margin: 10px 0 0;
+  font-size: clamp(28px, 4vw, 44px);
+  line-height: 1;
+  letter-spacing: -2px;
+}
+
+@media (max-width: 820px) {
+  .download-shell {
+    width: min(100% - 28px, 1180px);
+    padding: 36px 0 74px;
+  }
+
+  .download-hero-card {
+    min-height: auto;
+    border-radius: 30px;
+  }
+
+  .download-hero-card h1 {
+    letter-spacing: -2.8px;
+  }
+
+  .install-grid,
+  .download-safety-card {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 620px) {
+  .download-actions .button,
+  .cta-actions .button {
+    width: 100%;
+  }
+
+  .install-card {
+    min-height: 0;
   }
 }

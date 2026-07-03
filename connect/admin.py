@@ -3,7 +3,7 @@ from django.utils.html import format_html
 from django.urls import path, reverse
 from django.shortcuts import redirect
 from .models import (
-    User, Connection, ConnectionRequest, Message, RevealRequest, Block, EmailOTP, Report
+    User, Connection, ConnectionRequest, Message, RevealRequest, Block, EmailOTP, Report, PushDevice
 )
 
 @admin.register(User)
@@ -82,3 +82,4 @@ admin.site.register(RevealRequest)
 admin.site.register(Block)
 admin.site.register(EmailOTP)
 admin.site.register(Report)
+admin.site.register(PushDevice)

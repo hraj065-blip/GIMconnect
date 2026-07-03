@@ -5,6 +5,7 @@ GIM Connect – views.py
 All HTTP view logic for the connect app.
 """
 
+import json
 import logging
 import time
 from functools import wraps
@@ -20,6 +21,7 @@ from django.db import IntegrityError, transaction
 from django.db.models import OuterRef, Subquery
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.templatetags.static import static
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
@@ -31,6 +33,7 @@ from .models import (
     EmailOTP,
     Message,
     RevealRequest,
+    PushDevice,
     User,
 )
 from .services import (
@@ -46,6 +49,7 @@ from .services import (
     start_reveal,
     woman_reconfirm,
 )
+from .notifications import notify_new_message
 
 logger = logging.getLogger(__name__)
 
@@ -94,6 +98,13 @@ def _json_error(message, status=400):
     return JsonResponse({"error": message}, status=status)
 
 
+def _json_body(request):
+    try:
+        return json.loads(request.body.decode("utf-8") or "{}")
+    except (json.JSONDecodeError, UnicodeDecodeError):
+        return {}
+
+
 def _rate_limited(cache_key_prefix, limit_seconds):
     def decorator(view_func):
         @wraps(view_func)
@@ -115,6 +126,26 @@ def landing(request):
     if request.user.is_authenticated:
         return redirect("dashboard")
     return render(request, "connect/landing.html")
+
+
+def android_download(request):
+    apk_static_path = "downloads/gim-connect-latest.apk"
+    apk_file = settings.BASE_DIR / "static" / apk_static_path
+    has_local_apk = apk_file.exists()
+    apk_url = (
+        static(apk_static_path)
+        if has_local_apk
+        else "https://github.com/hraj065-blip/GIMconnect/releases/latest/download/gim-connect-release.apk"
+    )
+
+    return render(
+        request,
+        "connect/android_download.html",
+        {
+            "apk_url": apk_url,
+            "has_local_apk": has_local_apk,
+        },
+    )
 
 
 def signup(request):
@@ -272,7 +303,7 @@ def dashboard(request):
         and request.user.is_available        # ← NEW
         and active.count() < request.user.connection_cap
         and request.user.request_available_at <= timezone.now()
-    ),
+    )
 
     return render(
         request,
@@ -385,11 +416,12 @@ def send_message(request, pk):
     if form.is_valid():
         body = form.cleaned_data["body"].strip()
         if body:
-            Message.objects.create(
+            message = Message.objects.create(
                 connection=connection,
                 sender=request.user,
                 body=body,
             )
+            transaction.on_commit(lambda: notify_new_message(message.pk))
     else:
         messages.error(request, "Message could not be sent.")
     return redirect("chat", pk=pk)
@@ -757,4 +789,48 @@ def toggle_availability(request):
         messages.success(request, "You're back in the pool. New connections can start again.")
  
     return redirect("dashboard")
+
+
+# ---------------------------------------------------------------------------
+# Mobile app API
+# ---------------------------------------------------------------------------
+
+@login_required
+@require_POST
+def register_push_token(request):
+    payload = _json_body(request)
+    token = str(payload.get("token", "")).strip()
+
+    if not token:
+        return _json_error("Missing push token.")
+
+    device, _created = PushDevice.objects.update_or_create(
+        token=token,
+        defaults={
+            "user": request.user,
+            "platform": PushDevice.Platform.ANDROID,
+            "device_id": str(payload.get("deviceId", "")).strip()[:128],
+            "app_version": str(payload.get("appVersion", "")).strip()[:40],
+            "is_active": True,
+            "last_seen_at": timezone.now(),
+        },
+    )
+
+    return JsonResponse({"ok": True, "deviceId": device.pk})
+
+
+@login_required
+@require_POST
+def unregister_push_token(request):
+    payload = _json_body(request)
+    token = str(payload.get("token", "")).strip()
+
+    if not token:
+        return _json_error("Missing push token.")
+
+    PushDevice.objects.filter(user=request.user, token=token).update(
+        is_active=False,
+        last_seen_at=timezone.now(),
+    )
+    return JsonResponse({"ok": True})
  

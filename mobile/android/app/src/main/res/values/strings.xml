@@ -1,0 +1,10 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">GIM Connect</string>
+    <string name="title_activity_main">GIM Connect</string>
+    <string name="package_name">in.gimconnect.app</string>
+    <string name="custom_url_scheme">in.gimconnect.app</string>
+    <string name="default_notification_channel_id">gim_connect_messages</string>
+    <string name="default_notification_channel_name">GIM Connect updates</string>
+    <string name="default_notification_channel_description">New messages and anonymous connection updates.</string>
+</resources>

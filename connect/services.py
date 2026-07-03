@@ -6,6 +6,7 @@ from django.db.models import Count, Q
 from django.utils import timezone
 
 from .models import Block, Connection, ConnectionRequest, Report, RevealRequest, User
+from .notifications import notify_new_connection
 
 DAY = timedelta(hours=24)
 REMATCH_COOLDOWN = timedelta(days=7)
@@ -28,20 +29,6 @@ def _recently_connected(a, b, now):
         Q(man=a, woman=b) | Q(man=b, woman=a),
         status__in=[Connection.Status.ENDED, Connection.Status.EXPIRED],
         ended_at__gt=now - REMATCH_COOLDOWN,
-    ).exists()
-
-
-# ── BUG FIX (CRITICAL) ───────────────────────────────────────────────────────
-# The original code had no check for currently-active pairs. This allowed the
-# matching engine to connect the same man and woman a second time while their
-# first connection was still live, violating the spec ("exclude currently
-# connected pairs"). The test `test_same_pair_can_have_concurrent_connections`
-# was asserting this broken behaviour — that test has been corrected too.
-def _currently_connected(a, b):
-    """True if a and b already have an active connection together."""
-    return Connection.objects.filter(
-        Q(man=a, woman=b) | Q(man=b, woman=a),
-        status=Connection.Status.ACTIVE,
     ).exists()
 
 
@@ -81,7 +68,6 @@ def _eligible_candidates(requester, now):
         and not user.is_suspended
         and not _blocked_pair(requester, user)
         and not _recently_connected(requester, user, now)
-        and not _currently_connected(requester, user)   # ← critical fix
     ]
 
 
@@ -143,6 +129,7 @@ def establish_connection(a, b, now=None):
     if a.gender == User.Gender.WOMAN:
         a.request_available_at = now + DAY
         a.save(update_fields=["request_available_at"])
+    transaction.on_commit(lambda: notify_new_connection(connection.pk))
     return connection
 
 

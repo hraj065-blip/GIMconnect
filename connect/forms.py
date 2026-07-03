@@ -54,3 +54,9 @@ class SettingsForm(forms.ModelForm):
         model = User
         # Ensure 'photo' is included in this list!
         fields = ['display_name', 'photo']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["photo"].widget.attrs.update({
+            "accept": "image/*",
+        })
