@@ -50,6 +50,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",  # <--- RESTORED WHITENOISE HERE
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -137,16 +138,14 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 
 STORAGES = {
     "default": {
-        "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage", # <--- THIS WAS THE MISSING PIECE
+        "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage", 
     },
     "staticfiles": {
-        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage", # <--- RESTORED WHITENOISE HERE
     },
 }
 
-# Compatibility for django-cloudinary-storage's collectstatic command on
-# Django versions that prefer STORAGES.
-STATICFILES_STORAGE = "django.contrib.staticfiles.storage.StaticFilesStorage"
+# Removed the old STATICFILES_STORAGE variable as it conflicts with STORAGES in Django 5.2
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
