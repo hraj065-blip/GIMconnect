@@ -70,7 +70,7 @@ class User(AbstractUser):
  
 # ─────────────────────────────────────────────────────────────────────────────
 # is_eligible does NOT change.
-#
+#to commmit
 # is_available is intentionally separate from is_eligible so that:
 #   - The dashboard status pill still reads "Ready to connect" (not
 #     "Verification pending") when a verified user voluntarily pauses.
