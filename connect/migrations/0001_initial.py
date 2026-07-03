@@ -50,6 +50,7 @@ class Migration(migrations.Migration):
                 ('request_available_at', models.DateTimeField(default=django.utils.timezone.now)),
                 ('suspended_until', models.DateTimeField(blank=True, null=True)),
                 ('is_blocked', models.BooleanField(default=False)),
+                ('is_available', models.BooleanField(default=True, help_text='User-controlled pause switch. When False the user is excluded from new matching but existing active connections are unaffected.')),
                 ('groups', models.ManyToManyField(blank=True, help_text='The groups this user belongs to. A user will get all permissions granted to each of their groups.', related_name='user_set', related_query_name='user', to='auth.group', verbose_name='groups')),
                 ('user_permissions', models.ManyToManyField(blank=True, help_text='Specific permissions for this user.', related_name='user_set', related_query_name='user', to='auth.permission', verbose_name='user permissions')),
             ],

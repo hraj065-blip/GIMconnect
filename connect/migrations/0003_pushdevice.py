@@ -13,17 +13,6 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.AddField(
-            model_name="user",
-            name="is_available",
-            field=models.BooleanField(
-                default=True,
-                help_text=(
-                    "User-controlled pause switch. When False the user is excluded from "
-                    "new matching but existing active connections are unaffected."
-                ),
-            ),
-        ),
         migrations.CreateModel(
             name="PushDevice",
             fields=[
