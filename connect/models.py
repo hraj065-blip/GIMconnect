@@ -59,6 +59,26 @@ class User(AbstractUser):
     request_available_at = models.DateTimeField(default=timezone.now)
     suspended_until = models.DateTimeField(null=True, blank=True)
     is_blocked = models.BooleanField(default=False)
+     
+    is_available = models.BooleanField(
+        default=True,
+        help_text=(
+            "User-controlled pause switch. When False the user is excluded from "
+            "new matching but existing active connections are unaffected."
+        ),
+    )
+ 
+# ─────────────────────────────────────────────────────────────────────────────
+# is_eligible does NOT change.
+#
+# is_available is intentionally separate from is_eligible so that:
+#   - The dashboard status pill still reads "Ready to connect" (not
+#     "Verification pending") when a verified user voluntarily pauses.
+#   - Eligibility = verification status. Availability = user preference.
+#
+# The services layer enforces is_available explicitly (see services patch).
+# ─────────────────────────────────────────────────────────────────────────────
+ 
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ["display_name", "gender"]
