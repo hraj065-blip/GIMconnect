@@ -1,183 +1,56 @@
 {% extends "connect/base.html" %}
-{% block title %}Download GIM Connect for Android{% endblock %}
+{% block title %}Download Android App{% endblock %}
 
 {% block content %}
 <section class="download-shell">
-
-    <div class="download-hero-card">
-
-        <span class="eyebrow">
-            🚀 Android App Available
-        </span>
-
-        <h1>
-            GIM Connect.<br>
-            Now Faster. Smarter. Always Connected.
-        </h1>
-
-        <p class="hero-description">
-            Never miss a connection again. Install the official Android app to receive
-            instant message notifications, enjoy a smoother experience, and stay connected
-            even when you're away from the browser.
-        </p>
-
-        <div class="download-actions">
-
-            <a
-                class="button hero-button"
-                href="https://github.com/hraj065-blip/GIMconnect/releases/latest/download/Connect.apk"
-                target="_blank"
-                rel="noopener noreferrer">
-
-                 Download Android App
-
-            </a>
-
-            <a
-                class="button secondary"
-                href="{% url 'signup' %}">
-
-                Join with GIM Email
-
-            </a>
-
-        </div>
-
-        <p class="download-note">
-            ✓ Always downloads the latest official GIM Connect release
-        </p>
-
+  <div class="download-hero-card">
+    <span class="eyebrow">Android app</span>
+    <h1>GIM Connect, packaged for your phone.</h1>
+    <p>
+      The app loads the same live GIM Connect website you already use, with a native splash screen,
+      Android back button support, camera/file upload support, persistent login, and push notification readiness.
+    </p>
+    <div class="download-actions">
+      <a class="button hero-button" href="{{ apk_url }}">Download Android App</a>
+      <a class="button secondary" href="{% url 'signup' %}">Join with GIM email</a>
     </div>
+    {% if has_local_apk %}
+      <p class="download-note">This button downloads the APK bundled with the website.</p>
+    {% else %}
+      <p class="download-note">
+        The button points to the latest GitHub Release APK. If a release is not published yet,
+        build the APK from GitHub Actions and attach it to the latest release.
+      </p>
+    {% endif %}
+  </div>
 
+  <div class="install-grid">
+    <article class="install-card">
+      <span>01</span>
+      <h2>Download the APK</h2>
+      <p>Tap the download button and keep the file when Android asks for confirmation.</p>
+    </article>
+    <article class="install-card">
+      <span>02</span>
+      <h2>Allow this install</h2>
+      <p>If prompted, open settings and allow your browser to install unknown apps.</p>
+    </article>
+    <article class="install-card">
+      <span>03</span>
+      <h2>Install and sign in</h2>
+      <p>Open the APK, install it, then log in with your GIM account. Your session stays saved.</p>
+    </article>
+  </div>
 
-
-
-
-    <div class="install-grid">
-
-        <article class="install-card">
-
-            <span>⚡</span>
-
-            <h2>
-                Instant Notifications
-            </h2>
-
-            <p>
-                Receive push notifications the moment someone messages or connects with you.
-                No more refreshing tabs.
-            </p>
-
-        </article>
-
-
-
-        <article class="install-card">
-
-            <span>🔒</span>
-
-            <h2>
-                Secure Login
-            </h2>
-
-            <p>
-                Sign in using your existing GIM Connect account.
-                Your session stays securely logged in.
-            </p>
-
-        </article>
-
-
-
-        <article class="install-card">
-
-            <span>📷</span>
-
-            <h2>
-                Built for Mobile
-            </h2>
-
-            <p>
-                Camera uploads, file uploads, native navigation,
-                smoother scrolling and a true app experience.
-            </p>
-
-        </article>
-
+  <div class="download-safety-card">
+    <div>
+      <span class="eyebrow">Safe install tip</span>
+      <h2>Only install the APK from this page.</h2>
     </div>
-
-
-
-
-
-
-    <div class="download-safety-card">
-
-        <div>
-
-            <span class="eyebrow">
-
-                Installation
-
-            </span>
-
-            <h2>
-
-                First time installing an APK?
-
-            </h2>
-
-        </div>
-
-        <ol class="install-steps">
-
-            <li>
-                Tap <strong>Download Android App</strong>.
-            </li>
-
-            <li>
-                If Android asks, allow your browser to install apps from this source.
-            </li>
-
-            <li>
-                Open the downloaded APK.
-            </li>
-
-            <li>
-                Tap <strong>Install</strong>.
-            </li>
-
-            <li>
-                Log in using your existing GIM Connect account.
-            </li>
-
-        </ol>
-
-    </div>
-
-
-
-
-
-
-    <div class="download-footer">
-
-        <p>
-
-            <strong>Version:</strong> 1.0.0
-
-            &nbsp;•&nbsp;
-
-            <strong>Platform:</strong> Android
-
-            &nbsp;•&nbsp;
-
-            Official release by GIM Connect
-
-        </p>
-
-    </div>
-
+    <p>
+      APKs can be shared easily, so use this page as the source of truth. For future updates,
+      replace the release APK and this button will keep pointing students to the latest build.
+    </p>
+  </div>
 </section>
-
 {% endblock %}

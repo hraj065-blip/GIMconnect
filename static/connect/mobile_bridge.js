@@ -67,7 +67,7 @@
         await StatusBar.setOverlaysWebView({ overlay: false });
       }
       if (typeof StatusBar.setBackgroundColor === "function") {
-        await StatusBar.setBackgroundColor({ color: "#0F2F24" });
+        await StatusBar.setBackgroundColor({ color: "#F6F1E8" });
       }
       if (typeof StatusBar.setStyle === "function") {
         await StatusBar.setStyle({ style: "LIGHT" });

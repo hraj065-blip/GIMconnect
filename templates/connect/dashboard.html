@@ -98,7 +98,7 @@
         {% endif %}
         <span class="{% if user.onboarding_complete %}done{% endif %}">Guidelines accepted</span>
       </div>
-      <div style="display:flex;gap:12px;align-items:center;margin-top:16px;">
+      <div class="setup-actions">
         {% if not user.email_verified %}
           <form method="post" action="{% url 'resend_verification' %}" style="margin:0;">
             {% csrf_token %}
@@ -113,20 +113,29 @@
         <div class="dashboard-photo-section">
           {% if user.photo_status == "pending" and user.photo %}
             <div class="pending-banner">
-              <span style="font-size:24px;">⏳</span>
+              <span class="setup-icon" aria-hidden="true">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                  <path d="M7 3h10M7 21h10M8 3c0 4 8 4 8 9s-8 5-8 9M16 3c0 4-8 4-8 9s8 5 8 9" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+                </svg>
+              </span>
               <div>
-                <strong style="display:block;font-size:15px;margin-bottom:4px;">Photo under review</strong>
-                <p style="margin:0;font-size:13px;line-height:1.5;">
+                <strong>Photo under review</strong>
+                <p>
                   Your verification selfie is being reviewed. You can connect once it's approved.
                 </p>
               </div>
             </div>
           {% else %}
             <div class="action-banner">
-              <span style="font-size:24px;">📸</span>
+              <span class="setup-icon" aria-hidden="true">
+                <svg width="23" height="23" viewBox="0 0 24 24" fill="none">
+                  <path d="M4.5 8.5h3l1.5-2h6l1.5 2h3A1.5 1.5 0 0 1 22 10v7.5A1.5 1.5 0 0 1 20.5 19h-17A1.5 1.5 0 0 1 2 17.5V10a1.5 1.5 0 0 1 2.5-1.5Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+                  <circle cx="12" cy="13.5" r="3.2" stroke="currentColor" stroke-width="1.7"/>
+                </svg>
+              </span>
               <div>
-                <strong style="display:block;font-size:15px;margin-bottom:4px;">Verification selfie required</strong>
-                <p style="margin:0 0 14px;font-size:13px;line-height:1.5;color:var(--muted);">
+                <strong>Verification selfie required</strong>
+                <p>
                   A clear photo of your face is required. It stays hidden until a mutual reveal.
                 </p>
                 <a class="button small" href="{% url 'settings' %}">Upload in Settings</a>
@@ -189,7 +198,12 @@
 
     {% if user.gender == "F" and not user.photo %}
       <div class="photo-soft-hint">
-        <span class="hint-icon">📷</span>
+        <span class="hint-icon" aria-hidden="true">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none">
+            <path d="M4.5 8.5h3l1.5-2h6l1.5 2h3A1.5 1.5 0 0 1 22 10v7.5A1.5 1.5 0 0 1 20.5 19h-17A1.5 1.5 0 0 1 2 17.5V10a1.5 1.5 0 0 1 2.5-1.5Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+            <circle cx="12" cy="13.5" r="3.2" stroke="currentColor" stroke-width="1.7"/>
+          </svg>
+        </span>
         <div>
           <strong>Add a photo — optional</strong>
           <p>Stays hidden until a mutual reveal.
@@ -264,19 +278,52 @@
   /* ── Existing component styles ────────────────────────────────── */
   .dashboard-top-actions { display:flex;justify-content:flex-end;margin-bottom:16px; }
   .settings-nav-link {
-    display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:700;
-    color:var(--ink-soft);text-decoration:none;padding:8px 12px;
-    background:var(--paper);border:1px solid var(--line);border-radius:99px;transition:all .2s;
+    display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:800;
+    color:var(--pine);text-decoration:none;padding:9px 14px;
+    background:rgba(255,253,248,.82);border:1px solid rgba(28,80,63,.12);
+    border-radius:99px;box-shadow:0 12px 30px rgba(14,38,27,.06);transition:all .2s;
   }
   .settings-nav-link:hover { background:var(--pine-soft);border-color:rgba(28,80,63,.28);color:var(--pine); }
-  .dashboard-photo-section { margin-top:24px;padding-top:24px;border-top:1px solid var(--line); }
-  .pending-banner { display:flex;gap:14px;background:var(--pine-soft);color:var(--pine);padding:18px;border-radius:14px;align-items:flex-start; }
-  .action-banner { display:flex;gap:14px;background:var(--paper);padding:20px;border-radius:14px;border:1px solid var(--line);align-items:flex-start;box-shadow:0 4px 20px rgba(0,0,0,.03); }
-  .photo-soft-hint { display:flex;align-items:flex-start;gap:12px;margin-bottom:28px;padding:14px 18px;background:var(--cream);border:1px solid var(--line);border-radius:14px; }
-  .photo-soft-hint .hint-icon { font-size:20px;flex-shrink:0;margin-top:2px;opacity:.72; }
+  .setup-actions { display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:18px;grid-column:1 / -1; }
+  .dashboard-photo-section { grid-column:1 / -1;margin-top:4px;padding-top:22px;border-top:1px solid rgba(199,122,61,.18); }
+  .pending-banner,
+  .action-banner {
+    display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:start;
+    padding:18px;border-radius:20px;
+  }
+  .pending-banner { background:rgba(220,238,229,.74);color:var(--pine);border:1px solid rgba(28,80,63,.12); }
+  .action-banner {
+    background:rgba(255,253,248,.86);border:1px solid rgba(28,80,63,.10);
+    box-shadow:0 14px 36px rgba(14,38,27,.07);
+  }
+  .setup-icon,
+  .photo-soft-hint .hint-icon {
+    width:42px;height:42px;border-radius:16px;display:grid;place-items:center;
+    background:rgba(28,80,63,.08);color:var(--pine);flex-shrink:0;
+  }
+  .action-banner .setup-icon { background:rgba(199,122,61,.12);color:var(--ember-dark); }
+  .pending-banner strong,
+  .action-banner strong { display:block;font-size:15px;margin-bottom:4px;letter-spacing:-.25px; }
+  .pending-banner p,
+  .action-banner p { margin:0;font-size:13px;line-height:1.55;color:var(--muted); }
+  .action-banner p { margin-bottom:14px; }
+  .photo-soft-hint {
+    display:flex;align-items:flex-start;gap:14px;margin-bottom:28px;padding:16px 18px;
+    background:rgba(255,253,248,.76);border:1px solid rgba(28,80,63,.10);
+    border-radius:20px;box-shadow:0 14px 36px rgba(14,38,27,.06);
+  }
+  .photo-soft-hint .hint-icon { width:40px;height:40px;border-radius:15px;opacity:1; }
   .photo-soft-hint strong { display:block;font-size:13px;font-weight:600;margin-bottom:4px; }
   .photo-soft-hint p { margin:0;font-size:12.5px;color:var(--muted);line-height:1.6; }
   .photo-soft-hint a { color:var(--pine);font-weight:600;text-underline-offset:3px; }
+  @media (max-width:620px) {
+    .dashboard-top-actions { display:none; }
+    .setup-actions { flex-direction:column;align-items:stretch; }
+    .setup-actions .button,
+    .setup-actions form { width:100%; }
+    .pending-banner,
+    .action-banner { padding:16px; }
+  }
 
   /* ── Status pill — paused state ───────────────────────────────── */
   .status-pill.paused {

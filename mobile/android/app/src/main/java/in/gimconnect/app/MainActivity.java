@@ -17,7 +17,7 @@ import androidx.core.view.WindowInsetsControllerCompat;
 import com.getcapacitor.BridgeActivity;
 
 public class MainActivity extends BridgeActivity {
-    private static final String BRAND_GREEN = "#0F2F24";
+    private static final String SYSTEM_BAR_SURFACE = "#F6F1E8";
     private static final String MESSAGE_CHANNEL_ID = "gim_connect_messages";
 
     @Override
@@ -29,20 +29,24 @@ public class MainActivity extends BridgeActivity {
 
     private void configureSystemBars() {
         Window window = getWindow();
-        int brandGreen = Color.parseColor(BRAND_GREEN);
+        int systemBarSurface = Color.parseColor(SYSTEM_BAR_SURFACE);
 
-        window.setStatusBarColor(brandGreen);
-        window.setNavigationBarColor(brandGreen);
+        window.setStatusBarColor(systemBarSurface);
+        window.setNavigationBarColor(systemBarSurface);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            window.setStatusBarContrastEnforced(false);
+            window.setNavigationBarContrastEnforced(false);
+        }
         WindowCompat.setDecorFitsSystemWindows(window, false);
 
         View root = findViewById(R.id.main_container);
         if (root == null) return;
 
-        root.setBackgroundColor(brandGreen);
+        root.setBackgroundColor(systemBarSurface);
 
         WindowInsetsControllerCompat controller = WindowCompat.getInsetsController(window, root);
-        controller.setAppearanceLightStatusBars(false);
-        controller.setAppearanceLightNavigationBars(false);
+        controller.setAppearanceLightStatusBars(true);
+        controller.setAppearanceLightNavigationBars(true);
 
         ViewCompat.setOnApplyWindowInsetsListener(root, (view, windowInsets) -> {
             Insets systemInsets = windowInsets.getInsets(
