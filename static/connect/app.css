@@ -2592,8 +2592,20 @@ button {
   background: var(--cream);
 }
 
+.native-app {
+  --native-statusbar-offset: max(28px, env(safe-area-inset-top));
+}
+
 .native-app .site-header {
   background: rgba(246, 241, 232, .96);
+  height: calc(76px + var(--native-statusbar-offset));
+  padding-top: var(--native-statusbar-offset);
+}
+
+@media (max-width: 620px) {
+  .native-app .site-header {
+    height: calc(64px + var(--native-statusbar-offset));
+  }
 }
 
 .mobile-network-banner,
