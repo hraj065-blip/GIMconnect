@@ -2,7 +2,6 @@
 {% block title %}Your connections{% endblock %}
 {% block content %}
 <section class="dashboard-shell">
-
   <!-- ── Top nav ── -->
   <div class="dashboard-top-actions">
     <a href="{% url 'settings' %}" class="settings-nav-link">
@@ -14,7 +13,6 @@
       <span>Settings</span>
     </a>
   </div>
-
   <!-- ── Head ── -->
   <div class="dashboard-head">
     <div>
@@ -33,7 +31,6 @@
       <div class="status-pill ready">Ready to connect</div>
     {% endif %}
   </div>
-
   {% if messages %}
     <div class="form-message-banner" style="margin-bottom:24px;">
       {% for message in messages %}
@@ -45,11 +42,11 @@
       {% endfor %}
     </div>
   {% endif %}
-
   <!-- ╔══════════════════════════════════════════════════════════╗
        ║  ANDROID APP DOWNLOAD STRIP                            ║
        ║  Visible only on Android. Hidden on iOS and desktop.   ║
-       ║  Dismissible — remembers via localStorage.             ║
+       ║  Persistent — only goes away once the user actually    ║
+       ║  clicks through to download. No dismiss/close button.  ║
        ╚══════════════════════════════════════════════════════════╝ -->
   <div class="app-strip" id="app-strip" style="display:none;" role="banner" aria-label="Download Android app">
     <div class="app-strip-body">
@@ -69,7 +66,7 @@
       </div>
     </div>
     <div class="app-strip-actions">
-      <a class="app-strip-btn"
+      <a class="app-strip-btn" id="app-strip-download"
          href="https://github.com/hraj065-blip/GIMconnect/releases/download/THEapp/Connect.apk">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden="true">
           <path d="M12 3v13M7 13l5 5 5-5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -77,14 +74,8 @@
         </svg>
         Download
       </a>
-      <button class="app-strip-dismiss" id="app-strip-dismiss" aria-label="Dismiss">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-        </svg>
-      </button>
     </div>
   </div>
-
   <!-- ── Availability toggle ── -->
   {% if user.is_eligible %}
     <div class="availability-row {% if not user.is_available %}paused{% endif %}">
@@ -108,7 +99,6 @@
       </form>
     </div>
   {% endif %}
-
   <!-- ── Setup panel (not eligible: email or onboarding only) ── -->
   {% if not user.email_verified or not user.onboarding_complete %}
     <div class="verification-panel" style="margin-bottom:32px;">
@@ -132,7 +122,6 @@
         {% endif %}
       </div>
     </div>
-
   <!-- ── Connection panel (eligible) ── -->
   {% else %}
     <div class="request-panel {% if not user.is_available %}request-panel-paused{% endif %}" style="margin-bottom:32px;">
@@ -172,7 +161,6 @@
         </div>
       {% endif %}
     </div>
-
     {% if not user.photo %}
       <div class="photo-soft-hint">
         <span class="hint-icon" aria-hidden="true">
@@ -188,13 +176,11 @@
       </div>
     {% endif %}
   {% endif %}
-
   <!-- ── Active connections ── -->
   <div class="section-title">
     <h2>Active connections</h2>
     <span>{{ active_count }} open</span>
   </div>
-
   <div class="connection-grid">
     {% for connection in active_connections %}
       <a class="connection-card" href="{% url 'chat' connection.pk %}">
@@ -235,7 +221,6 @@
       </div>
     {% endfor %}
   </div>
-
   {% if history %}
     <div class="section-title" style="margin-top:40px;"><h2>Recent history</h2></div>
     <div class="history-list">
@@ -247,9 +232,7 @@
       {% endfor %}
     </div>
   {% endif %}
-
 </section>
-
 <style>
   .dashboard-top-actions { display:flex;justify-content:flex-end;margin-bottom:16px; }
   .settings-nav-link {
@@ -288,7 +271,6 @@
   .request-panel-paused { background:rgba(192,88,120,.07)!important;border-color:rgba(192,88,120,.18)!important; }
   .request-panel-paused strong { color:var(--rose,#C05878)!important; }
   .request-panel-paused p { color:rgba(192,88,120,.72)!important; }
-
   /* ── Connection card expiry countdown ───────────────────────────── */
   .connection-card-body { flex: 1; min-width: 0; }
   .connection-card-right {
@@ -312,9 +294,9 @@
     background: rgba(192, 88, 120, .12);
     color: var(--rose, #C05878);
   }
-
   /* ── Android app strip ───────────────────────────────────────── */
   .app-strip {
+    display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 12px;
@@ -330,50 +312,66 @@
     from { opacity:0; transform:translateY(-8px); }
     to   { opacity:1; transform:translateY(0); }
   }
-  .app-strip-body { display:flex;align-items:center;gap:13px;min-width:0; }
+  .app-strip-body { display:flex;align-items:center;gap:13px;min-width:0;flex:1 1 auto; }
   .app-strip-icon { width:38px;height:38px;border-radius:12px;display:grid;place-items:center;background:rgba(255,255,255,.08);color:#8FD4B0;flex-shrink:0; }
   .app-strip-text { display:flex;flex-direction:column;gap:2px;min-width:0; }
   .app-strip-text strong { font-size:13.5px;font-weight:700;color:rgba(237,233,224,.95);letter-spacing:-.15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
   .app-strip-text span { font-size:11.5px;color:rgba(237,233,224,.44);white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
   .app-strip-actions { display:flex;align-items:center;gap:8px;flex-shrink:0; }
-  .app-strip-btn { display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:99px;background:#C07030;color:white;font-size:12.5px;font-weight:700;text-decoration:none;letter-spacing:.1px;white-space:nowrap;transition:background .18s ease,transform .18s cubic-bezier(.34,1.12,.64,1); }
+  .app-strip-btn { display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:8px 16px;border-radius:99px;background:#C07030;color:white;font-size:12.5px;font-weight:700;text-decoration:none;letter-spacing:.1px;white-space:nowrap;transition:background .18s ease,transform .18s cubic-bezier(.34,1.12,.64,1); }
   .app-strip-btn:hover { background:#d07c38;transform:translateY(-1px); }
-  .app-strip-dismiss { width:30px;height:30px;border-radius:50%;border:none;background:rgba(255,255,255,.07);color:rgba(237,233,224,.45);cursor:pointer;display:grid;place-items:center;transition:background .16s ease,color .16s ease;flex-shrink:0; }
-  .app-strip-dismiss:hover { background:rgba(255,255,255,.13);color:rgba(237,233,224,.80); }
-
   @media (max-width:480px) {
-    .app-strip { padding:12px 14px;gap:10px; }
-    .app-strip-text strong { font-size:12.5px; }
+    /* Stack into two rows so the label always has its own full-width line
+       to render on — nothing shares space with the Download button anymore,
+       so the message can never get squeezed or clipped behind it. */
+    .app-strip {
+      flex-direction: column;
+      align-items: stretch;
+      padding: 14px 16px;
+      gap: 12px;
+    }
+    .app-strip-text strong {
+      white-space: normal;
+      overflow: visible;
+      text-overflow: unset;
+      line-height: 1.4;
+    }
     .app-strip-text span { display:none; }
-    .app-strip-btn { padding:7px 13px;font-size:12px; }
+    .app-strip-actions { width: 100%; }
+    .app-strip-btn { width: 100%; padding:10px 16px;font-size:12.5px; }
     .dashboard-top-actions { display:none; }
     .setup-actions { flex-direction:column;align-items:stretch; }
     .setup-actions .button, .setup-actions form { width:100%; }
     .pending-banner, .action-banner { padding:16px; }
   }
 </style>
-
 <script>
 (function () {
-  var KEY = 'gimconnect_app_strip_v1';
+  // Bumped to v2: the strip used to disappear forever the moment someone
+  // tapped the old dismiss (X) button. Now it's only ever marked "handled"
+  // once the person actually clicks through to download the app - so it
+  // stays persistent across visits until that happens. There is no close
+  // button, and anyone who dismissed it before under the old v1 key will
+  // correctly start seeing it again under this new key.
+  var KEY = 'gimconnect_app_downloaded_v2';
   var strip = document.getElementById('app-strip');
-  var btn   = document.getElementById('app-strip-dismiss');
+  var downloadLink = document.getElementById('app-strip-download');
   var onAndroid = /Android/i.test(navigator.userAgent);
-  var gone;
-  try { gone = !!localStorage.getItem(KEY); } catch(e) { gone = false; }
-  if (onAndroid && !gone) {
+  var alreadyDownloaded;
+  try { alreadyDownloaded = !!localStorage.getItem(KEY); } catch (e) { alreadyDownloaded = false; }
+
+  if (onAndroid && !alreadyDownloaded && strip) {
     strip.style.display = 'flex';
   }
-  if (btn) {
-    btn.addEventListener('click', function () {
-      strip.style.transition = 'opacity .18s ease, margin-bottom .18s ease';
-      strip.style.opacity = '0';
-      strip.style.marginBottom = '0';
-      setTimeout(function () { strip.style.display = 'none'; }, 200);
-      try { localStorage.setItem(KEY, '1'); } catch(e) {}
+
+  if (downloadLink) {
+    downloadLink.addEventListener('click', function () {
+      // A click-through to the APK is the strongest "downloaded" signal
+      // available client-side (we can't confirm the install itself
+      // completes) - treat it as done and stop showing the strip.
+      try { localStorage.setItem(KEY, '1'); } catch (e) {}
     });
   }
 }());
 </script>
-
 {% endblock %}
