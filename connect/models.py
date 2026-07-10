@@ -96,22 +96,17 @@ class User(AbstractUser):
         """
         Gate that controls whether a user can enter the matching pool.
 
-        Men   → must have a verified email, admin-approved photo, completed
-                onboarding, and no active block/suspension.
-        Women → photo is entirely optional and never blocks eligibility.
-                Only email verification + onboarding + no block/suspension
-                are required. Photo upload is encouraged but voluntary.
+        Both genders → email verified + onboarding complete + not blocked/suspended.
+        Photo is entirely optional for both men and women and never blocks eligibility.
         """
-        base = (
+        # Photo is optional for both genders and never blocks eligibility.
+        # Men enter the pool on email verification + onboarding, same as women.
+        return (
             self.email_verified
             and self.onboarding_complete
             and not self.is_blocked
             and not self.is_suspended
         )
-        if self.gender == self.Gender.MAN:
-            return base and self.photo_status == self.PhotoStatus.APPROVED
-        # Women enter the pool immediately after email + onboarding.
-        return base
 
     @property
     def connection_cap(self):
