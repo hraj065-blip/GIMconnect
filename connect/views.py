@@ -320,9 +320,9 @@ def dashboard(request):
 
     can_request = (
         request.user.is_eligible
-        and request.user.is_available        # ← NEW
-        and active.count() < request.user.connection_cap
-        and request.user.request_available_at <= timezone.now()
+        and request.user.is_available
+        and active_count < request.user.connection_cap
+        and request.user.request_available_at <= now
     )
 
     return render(
