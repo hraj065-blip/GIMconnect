@@ -9,18 +9,7 @@
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <circle cx="12" cy="12" r="3"/>
-        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0
-                 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1
-                 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9
-                 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1
-                 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2
-                 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0
-                 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65
-                 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0
-                 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2
-                 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33
-                 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2
-                 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
       </svg>
       <span>Settings</span>
     </a>
@@ -36,7 +25,6 @@
         active connection{{ active_count|pluralize }}.
       </p>
     </div>
-    {# 3-state pill: pending / paused / ready #}
     {% if not user.is_eligible %}
       <div class="status-pill">Verification pending</div>
     {% elif not user.is_available %}
@@ -58,7 +46,46 @@
     </div>
   {% endif %}
 
-  {# ── Availability toggle — only for fully verified users ── #}
+  <!-- ╔══════════════════════════════════════════════════════════╗
+       ║  ANDROID APP DOWNLOAD STRIP                            ║
+       ║  Visible only on Android. Hidden on iOS and desktop.   ║
+       ║  Dismissible — remembers via localStorage.             ║
+       ╚══════════════════════════════════════════════════════════╝ -->
+  <div class="app-strip" id="app-strip" style="display:none;" role="banner" aria-label="Download Android app">
+    <div class="app-strip-body">
+      <span class="app-strip-icon" aria-hidden="true">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+          <path d="M5 16a7 7 0 0 1 14 0" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+          <rect x="3" y="10" width="18" height="10" rx="3" fill="none" stroke="currentColor" stroke-width="1.7"/>
+          <circle cx="9" cy="15" r="1.2" fill="currentColor"/>
+          <circle cx="15" cy="15" r="1.2" fill="currentColor"/>
+          <line x1="7" y1="5" x2="9.5" y2="9.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          <line x1="17" y1="5" x2="14.5" y2="9.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </span>
+      <div class="app-strip-text">
+        <strong>Get notified when someone messages you</strong>
+        <span>Install the Android app — takes 30 seconds</span>
+      </div>
+    </div>
+    <div class="app-strip-actions">
+      <a class="app-strip-btn"
+         href="https://github.com/hraj065-blip/GIMconnect/releases/download/THEapp/Connect.apk">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M12 3v13M7 13l5 5 5-5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M4 20h16" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+        </svg>
+        Download
+      </a>
+      <button class="app-strip-dismiss" id="app-strip-dismiss" aria-label="Dismiss">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- ── Availability toggle ── -->
   {% if user.is_eligible %}
     <div class="availability-row {% if not user.is_available %}paused{% endif %}">
       <div class="avail-text">
@@ -73,8 +100,7 @@
       <form method="post" action="{% url 'toggle_availability' %}" style="margin:0;">
         {% csrf_token %}
         <button class="toggle-switch {% if user.is_available %}on{% endif %}"
-                type="submit"
-                role="switch"
+                type="submit" role="switch"
                 aria-checked="{{ user.is_available|yesno:'true,false' }}"
                 aria-label="Toggle matching availability">
           <span class="toggle-knob"></span>
@@ -83,9 +109,8 @@
     </div>
   {% endif %}
 
-  {# ─── SETUP PANEL (not yet eligible) ─── #}
+  <!-- ── Setup panel (not eligible) ── -->
   {% if not user.email_verified or not user.onboarding_complete or user.gender == "M" and user.photo_status != "approved" %}
-
     <div class="verification-panel" style="margin-bottom:32px;">
       <div>
         <span class="eyebrow">Account setup</span>
@@ -120,9 +145,7 @@
               </span>
               <div>
                 <strong>Photo under review</strong>
-                <p>
-                  Your verification selfie is being reviewed. You can connect once it's approved.
-                </p>
+                <p>Your verification selfie is being reviewed. You can connect once it's approved.</p>
               </div>
             </div>
           {% else %}
@@ -135,9 +158,7 @@
               </span>
               <div>
                 <strong>Verification selfie required</strong>
-                <p>
-                  A clear photo of your face is required. It stays hidden until a mutual reveal.
-                </p>
+                <p>A clear photo of your face is required. It stays hidden until a mutual reveal.</p>
                 <a class="button small" href="{% url 'settings' %}">Upload in Settings</a>
               </div>
             </div>
@@ -146,30 +167,24 @@
       {% endif %}
     </div>
 
-  {# ─── CONNECTION PANEL (eligible) ─── #}
+  <!-- ── Connection panel (eligible) ── -->
   {% else %}
-
-    <div class="request-panel {% if not user.is_available %}request-panel-paused{% endif %}"
-         style="margin-bottom:32px;">
-
+    <div class="request-panel {% if not user.is_available %}request-panel-paused{% endif %}" style="margin-bottom:32px;">
       {% if not user.is_available %}
         <div>
           <strong>Matching is paused</strong>
           <p>Switch availability on above to start making and receiving connections again.</p>
         </div>
-
       {% elif waiting_request %}
         <div>
           <span class="pulse"></span>
           <strong>Looking for the right open spot</strong>
-          <p>Your lobby request expires and is refunded at
-            {{ waiting_request.expires_at|date:"g:i A, M j" }}.</p>
+          <p>Your lobby request expires and is refunded at {{ waiting_request.expires_at|date:"g:i A, M j" }}.</p>
         </div>
         <form method="post" action="{% url 'cancel_waiting_request' waiting_request.pk %}">
           {% csrf_token %}
           <button class="button secondary" type="submit">Cancel request</button>
         </form>
-
       {% elif can_request %}
         <div>
           <strong>Open a new conversation</strong>
@@ -179,21 +194,17 @@
           {% csrf_token %}
           <button class="button" type="submit">Request connection</button>
         </form>
-
       {% elif active_count >= user.connection_cap %}
         <div>
           <strong>Your connection spaces are full</strong>
           <p>When one conversation ends, your next request window can begin.</p>
         </div>
-
       {% else %}
         <div>
           <strong>Your next request is resting</strong>
-          <p>The rolling window opens again at
-            {{ user.request_available_at|date:"g:i A, M j" }}.</p>
+          <p>The rolling window opens again at {{ user.request_available_at|date:"g:i A, M j" }}.</p>
         </div>
       {% endif %}
-
     </div>
 
     {% if user.gender == "F" and not user.photo %}
@@ -206,12 +217,10 @@
         </span>
         <div>
           <strong>Add a photo — optional</strong>
-          <p>Stays hidden until a mutual reveal.
-            <a href="{% url 'settings' %}">Upload in Settings</a> whenever you're ready.</p>
+          <p>Stays hidden until a mutual reveal. <a href="{% url 'settings' %}">Upload in Settings</a> whenever you're ready.</p>
         </div>
       </div>
     {% endif %}
-
   {% endif %}
 
   <!-- ── Active connections ── -->
@@ -234,14 +243,10 @@
             {% if connection.identities_revealed %}
               {% if user == connection.man %}
                 {{ connection.woman.display_name }}
-                <span style="display:block;font-size:12px;color:var(--muted);
-                             font-weight:normal;margin-top:2px;text-transform:lowercase;">
-                  {{ connection.woman.email }}</span>
+                <span style="display:block;font-size:12px;color:var(--muted);font-weight:normal;margin-top:2px;text-transform:lowercase;">{{ connection.woman.email }}</span>
               {% else %}
                 {{ connection.man.display_name }}
-                <span style="display:block;font-size:12px;color:var(--muted);
-                             font-weight:normal;margin-top:2px;text-transform:lowercase;">
-                  {{ connection.man.email }}</span>
+                <span style="display:block;font-size:12px;color:var(--muted);font-weight:normal;margin-top:2px;text-transform:lowercase;">{{ connection.man.email }}</span>
               {% endif %}
             {% else %}
               Anonymous connection
@@ -275,7 +280,6 @@
 </section>
 
 <style>
-  /* ── Existing component styles ────────────────────────────────── */
   .dashboard-top-actions { display:flex;justify-content:flex-end;margin-bottom:16px; }
   .settings-nav-link {
     display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:800;
@@ -283,144 +287,98 @@
     background:rgba(255,253,248,.82);border:1px solid rgba(28,80,63,.12);
     border-radius:99px;box-shadow:0 12px 30px rgba(14,38,27,.06);transition:all .2s;
   }
-  .settings-nav-link:hover { background:var(--pine-soft);border-color:rgba(28,80,63,.28);color:var(--pine); }
+  .settings-nav-link:hover { background:var(--pine-soft);border-color:rgba(28,80,63,.28); }
   .setup-actions { display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:18px;grid-column:1 / -1; }
   .dashboard-photo-section { grid-column:1 / -1;margin-top:4px;padding-top:22px;border-top:1px solid rgba(199,122,61,.18); }
-  .pending-banner,
-  .action-banner {
-    display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:start;
-    padding:18px;border-radius:20px;
-  }
+  .pending-banner, .action-banner { display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:start;padding:18px;border-radius:20px; }
   .pending-banner { background:rgba(220,238,229,.74);color:var(--pine);border:1px solid rgba(28,80,63,.12); }
-  .action-banner {
-    background:rgba(255,253,248,.86);border:1px solid rgba(28,80,63,.10);
-    box-shadow:0 14px 36px rgba(14,38,27,.07);
-  }
-  .setup-icon,
-  .photo-soft-hint .hint-icon {
-    width:42px;height:42px;border-radius:16px;display:grid;place-items:center;
-    background:rgba(28,80,63,.08);color:var(--pine);flex-shrink:0;
-  }
+  .action-banner { background:rgba(255,253,248,.86);border:1px solid rgba(28,80,63,.10);box-shadow:0 14px 36px rgba(14,38,27,.07); }
+  .setup-icon, .photo-soft-hint .hint-icon { width:42px;height:42px;border-radius:16px;display:grid;place-items:center;background:rgba(28,80,63,.08);color:var(--pine);flex-shrink:0; }
   .action-banner .setup-icon { background:rgba(199,122,61,.12);color:var(--ember-dark); }
-  .pending-banner strong,
-  .action-banner strong { display:block;font-size:15px;margin-bottom:4px;letter-spacing:-.25px; }
-  .pending-banner p,
-  .action-banner p { margin:0;font-size:13px;line-height:1.55;color:var(--muted); }
+  .pending-banner strong, .action-banner strong { display:block;font-size:15px;margin-bottom:4px;letter-spacing:-.25px; }
+  .pending-banner p, .action-banner p { margin:0;font-size:13px;line-height:1.55;color:var(--muted); }
   .action-banner p { margin-bottom:14px; }
-  .photo-soft-hint {
-    display:flex;align-items:flex-start;gap:14px;margin-bottom:28px;padding:16px 18px;
-    background:rgba(255,253,248,.76);border:1px solid rgba(28,80,63,.10);
-    border-radius:20px;box-shadow:0 14px 36px rgba(14,38,27,.06);
-  }
+  .photo-soft-hint { display:flex;align-items:flex-start;gap:14px;margin-bottom:28px;padding:16px 18px;background:rgba(255,253,248,.76);border:1px solid rgba(28,80,63,.10);border-radius:20px;box-shadow:0 14px 36px rgba(14,38,27,.06); }
   .photo-soft-hint .hint-icon { width:40px;height:40px;border-radius:15px;opacity:1; }
   .photo-soft-hint strong { display:block;font-size:13px;font-weight:600;margin-bottom:4px; }
   .photo-soft-hint p { margin:0;font-size:12.5px;color:var(--muted);line-height:1.6; }
   .photo-soft-hint a { color:var(--pine);font-weight:600;text-underline-offset:3px; }
-  @media (max-width:620px) {
-    .dashboard-top-actions { display:none; }
-    .setup-actions { flex-direction:column;align-items:stretch; }
-    .setup-actions .button,
-    .setup-actions form { width:100%; }
-    .pending-banner,
-    .action-banner { padding:16px; }
-  }
+  .status-pill.paused { background:rgba(192,88,120,.10);color:var(--rose); }
+  .availability-row { display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px 22px;margin-bottom:16px;border:1px solid var(--line);border-radius:18px;background:var(--paper);transition:background .22s ease,border-color .22s ease; }
+  .availability-row.paused { background:var(--pink-soft,#fdeef5);border-color:rgba(192,88,120,.22); }
+  .avail-text strong { display:block;font-size:14px;font-weight:700;letter-spacing:-.15px;margin-bottom:3px; }
+  .avail-text p { margin:0;font-size:12.5px;color:var(--muted);line-height:1.55; }
+  .availability-row.paused .avail-text strong { color:var(--rose,#C05878); }
+  .toggle-switch { position:relative;width:52px;height:30px;border-radius:15px;border:none;background:rgba(28,80,63,.16);cursor:pointer;padding:0;flex-shrink:0;transition:background .24s ease; }
+  .toggle-switch.on { background:var(--pine); }
+  .toggle-switch:focus-visible { outline:2px solid var(--pine);outline-offset:3px; }
+  .toggle-knob { position:absolute;top:4px;left:4px;width:22px;height:22px;border-radius:50%;background:white;box-shadow:0 2px 8px rgba(0,0,0,.20);transition:transform .24s cubic-bezier(.34,1.22,.64,1);pointer-events:none; }
+  .toggle-switch.on .toggle-knob { transform:translateX(22px); }
+  .request-panel-paused { background:rgba(192,88,120,.07)!important;border-color:rgba(192,88,120,.18)!important; }
+  .request-panel-paused strong { color:var(--rose,#C05878)!important; }
+  .request-panel-paused p { color:rgba(192,88,120,.72)!important; }
 
-  /* ── Status pill — paused state ───────────────────────────────── */
-  .status-pill.paused {
-    background: rgba(192, 88, 120, .10);
-    color: var(--rose);
-  }
-
-  /* ── Availability toggle row ───────────────────────────────────── */
-  .availability-row {
-    display: flex;
+  /* ── Android app strip ───────────────────────────────────────── */
+  .app-strip {
     align-items: center;
     justify-content: space-between;
-    gap: 16px;
-    padding: 16px 22px;
+    gap: 12px;
+    padding: 13px 18px;
     margin-bottom: 16px;
-    border: 1px solid var(--line);
+    background: #0b2e1e;
     border-radius: 18px;
-    background: var(--paper);
-    transition: background .22s ease, border-color .22s ease;
+    border: 1px solid rgba(255,255,255,.06);
+    box-shadow: 0 14px 40px rgba(7,20,12,.18);
+    animation: strip-in .32s cubic-bezier(.34,1.12,.64,1) both;
   }
-
-  .availability-row.paused {
-    background: var(--pink-soft, #fdeef5);
-    border-color: rgba(192, 88, 120, .22);
+  @keyframes strip-in {
+    from { opacity:0; transform:translateY(-8px); }
+    to   { opacity:1; transform:translateY(0); }
   }
+  .app-strip-body { display:flex;align-items:center;gap:13px;min-width:0; }
+  .app-strip-icon { width:38px;height:38px;border-radius:12px;display:grid;place-items:center;background:rgba(255,255,255,.08);color:#8FD4B0;flex-shrink:0; }
+  .app-strip-text { display:flex;flex-direction:column;gap:2px;min-width:0; }
+  .app-strip-text strong { font-size:13.5px;font-weight:700;color:rgba(237,233,224,.95);letter-spacing:-.15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
+  .app-strip-text span { font-size:11.5px;color:rgba(237,233,224,.44);white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
+  .app-strip-actions { display:flex;align-items:center;gap:8px;flex-shrink:0; }
+  .app-strip-btn { display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:99px;background:#C07030;color:white;font-size:12.5px;font-weight:700;text-decoration:none;letter-spacing:.1px;white-space:nowrap;transition:background .18s ease,transform .18s cubic-bezier(.34,1.12,.64,1); }
+  .app-strip-btn:hover { background:#d07c38;transform:translateY(-1px); }
+  .app-strip-dismiss { width:30px;height:30px;border-radius:50%;border:none;background:rgba(255,255,255,.07);color:rgba(237,233,224,.45);cursor:pointer;display:grid;place-items:center;transition:background .16s ease,color .16s ease;flex-shrink:0; }
+  .app-strip-dismiss:hover { background:rgba(255,255,255,.13);color:rgba(237,233,224,.80); }
 
-  .avail-text strong {
-    display: block;
-    font-size: 14px;
-    font-weight: 700;
-    letter-spacing: -.15px;
-    margin-bottom: 3px;
-  }
-
-  .avail-text p {
-    margin: 0;
-    font-size: 12.5px;
-    color: var(--muted);
-    line-height: 1.55;
-  }
-
-  .availability-row.paused .avail-text strong {
-    color: var(--rose, #C05878);
-  }
-
-  /* ── Toggle switch ─────────────────────────────────────────────── */
-  .toggle-switch {
-    position: relative;
-    width: 52px;
-    height: 30px;
-    border-radius: 15px;
-    border: none;
-    background: rgba(28, 80, 63, .16);
-    cursor: pointer;
-    padding: 0;
-    flex-shrink: 0;
-    transition: background .24s ease;
-  }
-
-  .toggle-switch.on {
-    background: var(--pine);
-  }
-
-  .toggle-switch:focus-visible {
-    outline: 2px solid var(--pine);
-    outline-offset: 3px;
-  }
-
-  .toggle-knob {
-    position: absolute;
-    top: 4px;
-    left: 4px;
-    width: 22px;
-    height: 22px;
-    border-radius: 50%;
-    background: white;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, .20);
-    transition: transform .24s cubic-bezier(.34, 1.22, .64, 1);
-    pointer-events: none;
-  }
-
-  .toggle-switch.on .toggle-knob {
-    transform: translateX(22px);
-  }
-
-  /* ── Request panel paused variant ─────────────────────────────── */
-  .request-panel-paused {
-    background: rgba(192, 88, 120, .07) !important;
-    border-color: rgba(192, 88, 120, .18) !important;
-  }
-
-  .request-panel-paused strong {
-    color: var(--rose, #C05878) !important;
-  }
-
-  .request-panel-paused p {
-    color: rgba(192, 88, 120, .72) !important;
+  @media (max-width:480px) {
+    .app-strip { padding:12px 14px;gap:10px; }
+    .app-strip-text strong { font-size:12.5px; }
+    .app-strip-text span { display:none; }
+    .app-strip-btn { padding:7px 13px;font-size:12px; }
+    .dashboard-top-actions { display:none; }
+    .setup-actions { flex-direction:column;align-items:stretch; }
+    .setup-actions .button, .setup-actions form { width:100%; }
+    .pending-banner, .action-banner { padding:16px; }
   }
 </style>
+
+<script>
+(function () {
+  var KEY = 'gimconnect_app_strip_v1';
+  var strip = document.getElementById('app-strip');
+  var btn   = document.getElementById('app-strip-dismiss');
+  var onAndroid = /Android/i.test(navigator.userAgent);
+  var gone;
+  try { gone = !!localStorage.getItem(KEY); } catch(e) { gone = false; }
+  if (onAndroid && !gone) {
+    strip.style.display = 'flex';
+  }
+  if (btn) {
+    btn.addEventListener('click', function () {
+      strip.style.transition = 'opacity .18s ease, margin-bottom .18s ease';
+      strip.style.opacity = '0';
+      strip.style.marginBottom = '0';
+      setTimeout(function () { strip.style.display = 'none'; }, 200);
+      try { localStorage.setItem(KEY, '1'); } catch(e) {}
+    });
+  }
+}());
+</script>
+
 {% endblock %}
