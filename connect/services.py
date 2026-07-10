@@ -9,6 +9,7 @@ from .models import Block, Connection, ConnectionRequest, Report, RevealRequest,
 from .notifications import notify_new_connection
 
 DAY = timedelta(hours=24)
+CONNECTION_DURATION = timedelta(days=7)
 REMATCH_COOLDOWN = timedelta(days=7)
 REVEAL_WINDOW = timedelta(minutes=3)
 
@@ -41,11 +42,10 @@ def _eligible_candidates(requester, now):
         onboarding_complete=True,
         is_blocked=False,
         is_active=True,
-        is_available=True,          # ← NEW: paused users excluded from pool
+        is_available=True,          # paused users excluded from pool
     )
-    if opposite == User.Gender.MAN:
-        base_filters["photo_status"] = User.PhotoStatus.APPROVED
- 
+    # Photo is optional for both genders — no photo_status gate in matching.
+
     candidates = User.objects.filter(**base_filters).exclude(pk=requester.pk)
     candidates = candidates.annotate(
         active_total=Count(
@@ -116,7 +116,7 @@ def establish_connection(a, b, now=None):
         man=man,
         woman=woman,
         established_at=now,
-        expires_at=now + DAY,
+        expires_at=now + CONNECTION_DURATION,
     )
     # Every new real connection (re)starts the man's rolling 24-hour request
     # window. Only advance the timer — never push it backwards.
