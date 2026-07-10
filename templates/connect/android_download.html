@@ -11,16 +11,13 @@
       Android back button support, camera/file upload support, persistent login, and push notification readiness.
     </p>
     <div class="download-actions">
-      <a class="button hero-button" href="{{ apk_url }}">Download Android App</a>
+      <a class="button hero-button"
+         href="https://github.com/hraj065-blip/GIMconnect/releases/download/THEapp/Connect.apk">
+        Download Android App
+      </a>
       <a class="button secondary" href="{% url 'signup' %}">Join with GIM email</a>
     </div>
-    {% if has_local_apk %}
-      <p class="download-note">This button downloads the APK bundled with the website.</p>
-    {% else %}
-      <p class="download-note">
-       
-      </p>
-    {% endif %}
+    <p class="download-note">Downloads directly from GitHub. Tap and install.</p>
   </div>
 
   <div class="install-grid">
@@ -47,7 +44,7 @@
       <h2>Only install the APK from this page.</h2>
     </div>
     <p>
-      APKs can be shared easily, so use this page as the source of truth. 
+      APKs can be shared easily, so use this page as the source of truth.
     </p>
   </div>
 </section>
