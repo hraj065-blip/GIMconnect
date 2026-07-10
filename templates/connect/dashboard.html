@@ -109,8 +109,8 @@
     </div>
   {% endif %}
 
-  <!-- ── Setup panel (not eligible) ── -->
-  {% if not user.email_verified or not user.onboarding_complete or user.gender == "M" and user.photo_status != "approved" %}
+  <!-- ── Setup panel (not eligible: email or onboarding only) ── -->
+  {% if not user.email_verified or not user.onboarding_complete %}
     <div class="verification-panel" style="margin-bottom:32px;">
       <div>
         <span class="eyebrow">Account setup</span>
@@ -118,9 +118,6 @@
       </div>
       <div class="check-list">
         <span class="{% if user.email_verified %}done{% endif %}">Email verified</span>
-        {% if user.gender == "M" %}
-          <span class="{% if user.photo_status == 'approved' %}done{% endif %}">Photo approved</span>
-        {% endif %}
         <span class="{% if user.onboarding_complete %}done{% endif %}">Guidelines accepted</span>
       </div>
       <div class="setup-actions">
@@ -134,37 +131,6 @@
           <a class="button small" href="{% url 'onboarding' %}">Finish onboarding</a>
         {% endif %}
       </div>
-      {% if user.gender == "M" and user.email_verified and user.photo_status != "approved" %}
-        <div class="dashboard-photo-section">
-          {% if user.photo_status == "pending" and user.photo %}
-            <div class="pending-banner">
-              <span class="setup-icon" aria-hidden="true">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-                  <path d="M7 3h10M7 21h10M8 3c0 4 8 4 8 9s-8 5-8 9M16 3c0 4-8 4-8 9s8 5 8 9" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
-                </svg>
-              </span>
-              <div>
-                <strong>Photo under review</strong>
-                <p>Your verification selfie is being reviewed. You can connect once it's approved.</p>
-              </div>
-            </div>
-          {% else %}
-            <div class="action-banner">
-              <span class="setup-icon" aria-hidden="true">
-                <svg width="23" height="23" viewBox="0 0 24 24" fill="none">
-                  <path d="M4.5 8.5h3l1.5-2h6l1.5 2h3A1.5 1.5 0 0 1 22 10v7.5A1.5 1.5 0 0 1 20.5 19h-17A1.5 1.5 0 0 1 2 17.5V10a1.5 1.5 0 0 1 2.5-1.5Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
-                  <circle cx="12" cy="13.5" r="3.2" stroke="currentColor" stroke-width="1.7"/>
-                </svg>
-              </span>
-              <div>
-                <strong>Verification selfie required</strong>
-                <p>A clear photo of your face is required. It stays hidden until a mutual reveal.</p>
-                <a class="button small" href="{% url 'settings' %}">Upload in Settings</a>
-              </div>
-            </div>
-          {% endif %}
-        </div>
-      {% endif %}
     </div>
 
   <!-- ── Connection panel (eligible) ── -->
@@ -207,7 +173,7 @@
       {% endif %}
     </div>
 
-    {% if user.gender == "F" and not user.photo %}
+    {% if not user.photo %}
       <div class="photo-soft-hint">
         <span class="hint-icon" aria-hidden="true">
           <svg width="19" height="19" viewBox="0 0 24 24" fill="none">
@@ -238,7 +204,7 @@
             {% else %}{{ connection.man.display_name|first }}{% endif %}
           {% else %}?{% endif %}
         </div>
-        <div>
+        <div class="connection-card-body">
           <strong>
             {% if connection.identities_revealed %}
               {% if user == connection.man %}
@@ -254,7 +220,12 @@
           </strong>
           <p>{{ connection.last_message_body|default:"A fresh conversation is waiting."|truncatechars:52 }}</p>
         </div>
-        <span class="chevron">›</span>
+        <div class="connection-card-right">
+          <span class="expires-badge {% if connection.expires_in_urgent %}expires-urgent{% endif %}">
+            {{ connection.expires_in_label }}
+          </span>
+          <span class="chevron">›</span>
+        </div>
       </a>
     {% empty %}
       <div class="empty-state">
@@ -317,6 +288,30 @@
   .request-panel-paused { background:rgba(192,88,120,.07)!important;border-color:rgba(192,88,120,.18)!important; }
   .request-panel-paused strong { color:var(--rose,#C05878)!important; }
   .request-panel-paused p { color:rgba(192,88,120,.72)!important; }
+
+  /* ── Connection card expiry countdown ───────────────────────────── */
+  .connection-card-body { flex: 1; min-width: 0; }
+  .connection-card-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+  .expires-badge {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .2px;
+    padding: 4px 9px;
+    border-radius: 999px;
+    background: var(--pine-soft);
+    color: var(--pine);
+    white-space: nowrap;
+  }
+  .expires-badge.expires-urgent {
+    background: rgba(192, 88, 120, .12);
+    color: var(--rose, #C05878);
+  }
 
   /* ── Android app strip ───────────────────────────────────────── */
   .app-strip {
