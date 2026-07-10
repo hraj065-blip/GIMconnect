@@ -1,4 +1,3 @@
-
 """
 GIM Connect – views.py
 ======================
@@ -276,11 +275,33 @@ def dashboard(request):
         .values("body")[:1]
     )
 
-    active = (
+    active_qs = (
         active_base
         .select_related("man", "woman")
         .annotate(last_message_body=Subquery(last_message_subquery))
     )
+
+    # Attach a human-readable countdown string to each connection so the
+    # template can display "3 days left" / "14 hours left" without extra queries.
+    now = timezone.now()
+    active = []
+    for conn in active_qs:
+        delta = conn.expires_at - now
+        total_seconds = max(int(delta.total_seconds()), 0)
+        total_hours = total_seconds // 3600
+        if total_hours >= 48:
+            conn.expires_in_label = f"{total_hours // 24} days left"
+        elif total_hours >= 24:
+            conn.expires_in_label = "1 day left"
+        elif total_hours >= 2:
+            conn.expires_in_label = f"{total_hours} hours left"
+        elif total_hours == 1:
+            conn.expires_in_label = "1 hour left"
+        else:
+            remaining_mins = total_seconds // 60
+            conn.expires_in_label = f"{remaining_mins} min left" if remaining_mins > 0 else "Expiring soon"
+        conn.expires_in_urgent = total_hours < 24
+        active.append(conn)
 
     waiting = (
         ConnectionRequest.objects
@@ -295,7 +316,6 @@ def dashboard(request):
         status=Connection.Status.ACTIVE
     ).order_by("-ended_at")[:8]
 
-    now = timezone.now()
     request_ready = request.user.request_available_at <= now
 
     can_request = (
@@ -718,17 +738,6 @@ def resend_verification(request):
 
 
 @login_required
-@login_required
-# ─────────────────────────────────────────────────────────────────────────────
-# PATCH: replace the account_settings view with this version.
-# The only change is in the photo-upload feedback message.
-#
-# Previously the message said "Your account is temporarily pending" for all
-# users. For women, this is inaccurate — a pending photo never blocks their
-# eligibility. The message now differs by gender.
-# ─────────────────────────────────────────────────────────────────────────────
-
-@login_required
 def account_settings(request):
     form = SettingsForm(request.POST or None, request.FILES or None, instance=request.user)
 
@@ -737,23 +746,13 @@ def account_settings(request):
 
         if "photo" in form.changed_data:
             user.photo_status = User.PhotoStatus.PENDING
-
-            # The feedback message differs by gender.
-            # For men, a pending photo blocks eligibility — they need to know.
-            # For women, photo is optional and never blocks — don't alarm them.
-            if user.gender == User.Gender.MAN:
-                messages.info(
-                    request,
-                    "Your new photo has been submitted for review. "
-                    "Your account is temporarily pending until it is approved.",
-                )
-            else:
-                messages.info(
-                    request,
-                    "Your photo has been submitted for review. "
-                    "It will appear during identity reveals once approved. "
-                    "Your connections are not affected.",
-                )
+            # Photo is optional for both genders and never blocks eligibility.
+            messages.info(
+                request,
+                "Your photo has been submitted for review. "
+                "It will appear during identity reveals once approved. "
+                "Your connections are not affected.",
+            )
 
         user.save()
         update_session_auth_hash(request, user)
@@ -761,6 +760,8 @@ def account_settings(request):
         return redirect("settings")
 
     return render(request, "connect/settings.html", {"form": form})
+
+
 @login_required
 @require_POST
 def toggle_availability(request):
@@ -833,4 +834,3 @@ def unregister_push_token(request):
         last_seen_at=timezone.now(),
     )
     return JsonResponse({"ok": True})
- 
