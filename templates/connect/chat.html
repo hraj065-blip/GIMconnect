@@ -20,7 +20,12 @@
           {% if connection.identities_revealed %}
             {{ other.display_name }}
             <span class="chat-peer-email">{{ other.email }}</span>
-          {% else %}{{ anonymous_display_name }}{% endif %}
+          {% else %}
+            {{ anonymous_display_name }}
+            {% if other.mockup_fun_name %}
+              <span class="chat-peer-email" style="text-transform:none;">Alias: {{ other.mockup_fun_name }}</span>
+            {% endif %}
+          {% endif %}
         </strong>
         <span>
           {% if connection.status == "active" and not connection.identities_revealed and anonymous_intro %}
@@ -57,7 +62,6 @@
           <div style="font-size: 13px; color: var(--pine); font-weight: 500; opacity: 0.8; margin-top: 2px; text-transform: lowercase;">{{ other.email }}</div>
         </strong>
       </div>
-    </div>
     </div>
 
   {% elif reveal %}
