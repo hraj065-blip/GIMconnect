@@ -1,6 +1,9 @@
 from datetime import timedelta
 
+from django.contrib.auth import get_user_model
 from django.utils import timezone
+
+User = get_user_model()
 
 
 class LastActiveMiddleware:
@@ -11,6 +14,7 @@ class LastActiveMiddleware:
 
     def __call__(self, request):
         user = getattr(request, "user", None)
+
         if (
             user is not None
             and user.is_authenticated
@@ -18,8 +22,9 @@ class LastActiveMiddleware:
         ):
             now = timezone.now()
             last_active_at = getattr(user, "last_active_at", None)
+
             if last_active_at is None or now - last_active_at >= timedelta(hours=1):
-                type(user).objects.filter(pk=user.pk).update(last_active_at=now)
+                User.objects.filter(pk=user.pk).update(last_active_at=now)
                 user.last_active_at = now
 
         return self.get_response(request)
