@@ -4,7 +4,10 @@
 <section class="narrow-shell">
   <div class="form-card"><span class="eyebrow">Welcome back</span><h1>Continue your conversations.</h1>
     <form method="post" class="stack-form">{% csrf_token %}{{ form.as_p }}<button class="button full">Log in</button></form>
-    <p class="form-foot">New here? <a href="{% url 'signup' %}">Create an account</a></p>
+    <p class="form-foot">
+      <a href="{% url 'password_reset' %}">Forgot password?</a>
+      · New here? <a href="{% url 'signup' %}">Create an account</a>
+    </p>
   </div>
 </section>
 {% endblock %}

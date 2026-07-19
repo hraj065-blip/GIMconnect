@@ -1,11 +1,26 @@
 import secrets
 from datetime import timedelta
 
+from cryptography.fernet import Fernet, InvalidToken
+from django.conf import settings
 from django.contrib.auth.models import AbstractUser, BaseUserManager
+from django.core.exceptions import ImproperlyConfigured
 from django.core.validators import MinLengthValidator
 from django.db import models
 from django.db.models import Q
 from django.utils import timezone
+
+ENCRYPTED_MESSAGE_PREFIX = "gimenc:v1:"
+
+
+def _message_fernet():
+    key = getattr(settings, "DJANGO_ENCRYPTION_KEY", "")
+    if not key:
+        raise ImproperlyConfigured("DJANGO_ENCRYPTION_KEY must be set to encrypt chat messages.")
+    try:
+        return Fernet(key.encode("utf-8"))
+    except (TypeError, ValueError) as exc:
+        raise ImproperlyConfigured("DJANGO_ENCRYPTION_KEY is not a valid Fernet key.") from exc
 
 
 class UserManager(BaseUserManager):
@@ -57,6 +72,7 @@ class User(AbstractUser):
     )
     onboarding_complete = models.BooleanField(default=False)
     request_available_at = models.DateTimeField(default=timezone.now)
+    last_active_at = models.DateTimeField(default=timezone.now)
     suspended_until = models.DateTimeField(null=True, blank=True)
     is_blocked = models.BooleanField(default=False)
      
@@ -101,6 +117,11 @@ class User(AbstractUser):
         """
         # Photo is optional for both genders and never blocks eligibility.
         # Men enter the pool on email verification + onboarding, same as women.
+        if getattr(settings, "ENABLE_AUTOPAUSE_FEATURE", True):
+            inactive_before = timezone.now() - timedelta(days=45)
+            if self.last_active_at < inactive_before:
+                return False
+
         return (
             self.email_verified
             and self.onboarding_complete
@@ -238,6 +259,13 @@ class Message(models.Model):
     sender = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name="sent_messages"
     )
+    reply_to = models.ForeignKey(
+        "self",
+        on_delete=models.SET_NULL,
+        related_name="replies",
+        null=True,
+        blank=True,
+    )
     body = models.TextField(validators=[MinLengthValidator(1)], max_length=2000)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -250,6 +278,25 @@ class Message(models.Model):
 
     def __str__(self):
         return f"Msg #{self.pk} in Connection #{self.connection_id} by {self.sender}"
+
+    def save(self, *args, **kwargs):
+        if self.body and not self.body.startswith(ENCRYPTED_MESSAGE_PREFIX):
+            token = _message_fernet().encrypt(self.body.encode("utf-8")).decode("utf-8")
+            self.body = f"{ENCRYPTED_MESSAGE_PREFIX}{token}"
+        super().save(*args, **kwargs)
+
+    @property
+    def get_body(self):
+        if not self.body:
+            return ""
+        if not self.body.startswith(ENCRYPTED_MESSAGE_PREFIX):
+            return self.body
+
+        token = self.body[len(ENCRYPTED_MESSAGE_PREFIX):]
+        try:
+            return _message_fernet().decrypt(token.encode("utf-8")).decode("utf-8")
+        except (InvalidToken, ImproperlyConfigured, UnicodeDecodeError):
+            return "[Message unavailable]"
 
 
 class RevealRequest(models.Model):

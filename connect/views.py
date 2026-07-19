@@ -17,7 +17,6 @@ from django.core.cache import cache
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.core.mail import send_mail, BadHeaderError
 from django.db import IntegrityError, transaction
-from django.db.models import OuterRef, Subquery
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.templatetags.static import static
@@ -269,16 +268,9 @@ def dashboard(request):
     active_base = request.user.active_connections()
     active_count = active_base.count()
 
-    last_message_subquery = (
-        Message.objects.filter(connection=OuterRef("pk"))
-        .order_by("-created_at", "-pk")
-        .values("body")[:1]
-    )
-
     active_qs = (
         active_base
         .select_related("man", "woman")
-        .annotate(last_message_body=Subquery(last_message_subquery))
     )
 
     # Attach a human-readable countdown string to each connection so the
@@ -301,6 +293,13 @@ def dashboard(request):
             remaining_mins = total_seconds // 60
             conn.expires_in_label = f"{remaining_mins} min left" if remaining_mins > 0 else "Expiring soon"
         conn.expires_in_urgent = total_hours < 24
+        last_message = (
+            conn.chat_messages
+            .only("body")
+            .order_by("-created_at", "-pk")
+            .first()
+        )
+        conn.last_message_body = last_message.get_body if last_message else ""
         active.append(conn)
 
     waiting = (
@@ -418,7 +417,7 @@ def chat(request, pk):
             "other": connection.other_user(request.user),
             "chat_messages": (
                 connection.chat_messages
-                .select_related("sender")
+                .select_related("sender", "reply_to", "reply_to__sender")
                 .order_by("created_at")
             ),
             "form": MessageForm(),
@@ -436,9 +435,17 @@ def send_message(request, pk):
     if form.is_valid():
         body = form.cleaned_data["body"].strip()
         if body:
+            reply_to = None
+            reply_to_id = form.cleaned_data.get("reply_to")
+            if reply_to_id:
+                reply_to = Message.objects.filter(
+                    pk=reply_to_id,
+                    connection=connection,
+                ).first()
             message = Message.objects.create(
                 connection=connection,
                 sender=request.user,
+                reply_to=reply_to,
                 body=body,
             )
             transaction.on_commit(lambda: notify_new_message(message.pk))
@@ -460,7 +467,8 @@ def messages_json(request, pk):
     items = (
         connection.chat_messages
         .filter(pk__gt=after)
-        .only("id", "body", "sender", "created_at")
+        .select_related("reply_to", "reply_to__sender")
+        .only("id", "body", "sender", "created_at", "reply_to__id", "reply_to__body", "reply_to__sender")
         .order_by("pk")
     )
 
@@ -482,9 +490,18 @@ def messages_json(request, pk):
             "messages": [
                 {
                     "id": item.pk,
-                    "body": item.body,
+                    "body": item.get_body,
                     "mine": item.sender_id == request.user.pk,
                     "time": timezone.localtime(item.created_at).strftime("%-I:%M %p"),
+                    "reply": (
+                        {
+                            "id": item.reply_to_id,
+                            "body": item.reply_to.get_body,
+                            "mine": item.reply_to.sender_id == request.user.pk,
+                        }
+                        if item.reply_to_id
+                        else None
+                    ),
                 }
                 for item in items
             ],

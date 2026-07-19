@@ -55,6 +55,7 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "connect.middleware.LastActiveMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
@@ -174,10 +175,13 @@ raw_port = os.environ.get("EMAIL_PORT")
 EMAIL_PORT = int(raw_port) if raw_port and raw_port.isdigit() else 587
 
 EMAIL_USE_TLS = (os.environ.get("EMAIL_USE_TLS") or "True").lower() == "true"
+EMAIL_USE_SSL = (os.environ.get("EMAIL_USE_SSL") or "False").lower() == "true"
+EMAIL_TIMEOUT = int(os.environ.get("EMAIL_TIMEOUT", "10"))
 EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER") or "gimconnect4@gmail.com"
 EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD") or ""
 DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL") or "GIM Connect <gimconnect4@gmail.com>"
 SERVER_EMAIL = DEFAULT_FROM_EMAIL
+PASSWORD_RESET_TIMEOUT = int(os.environ.get("PASSWORD_RESET_TIMEOUT", "3600"))
 
 GIM_ALLOWED_EMAIL_DOMAINS = [
     value.strip().lower()
@@ -188,6 +192,13 @@ GIM_ALLOWED_EMAIL_DOMAINS = [
 AI_BOOTSTRAP_ENABLED = False
 FIREBASE_SERVICE_ACCOUNT_JSON = os.environ.get("FIREBASE_SERVICE_ACCOUNT_JSON", "").strip()
 FCM_PROJECT_ID = os.environ.get("FCM_PROJECT_ID", "").strip()
+DJANGO_ENCRYPTION_KEY = os.environ.get("DJANGO_ENCRYPTION_KEY", "").strip()
+ENABLE_AUTOPAUSE_FEATURE = os.environ.get("ENABLE_AUTOPAUSE_FEATURE", "1").lower() in {
+    "1",
+    "true",
+    "yes",
+    "on",
+}
 
 # ---------------------------------------------------------------------------
 # CSRF Trusted Origins (Crucial for Vercel Forms)

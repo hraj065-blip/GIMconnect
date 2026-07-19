@@ -5,19 +5,24 @@
 <section class="chat-shell">
 
   {# ── HEADER ─────────────────────────────────────────────────────────────── #}
- <header class="chat-header">
+  <header class="chat-header">
     <a class="back-link" href="{% url 'dashboard' %}">‹ Connections</a>
-    <div>
-      <strong>
-        {% if connection.identities_revealed %}
-          {{ other.display_name }}
-          <div style="font-size: 11px; color: var(--muted); font-weight: normal; margin-top: 2px; text-transform: lowercase;">{{ other.email }}</div>
-        {% else %}Anonymous connection{% endif %}
-      </strong>
-      <span>
-        {% if connection.status == "active" %}Private text conversation
-        {% else %}This connection has ended{% endif %}
+    <div class="chat-peer">
+      <span class="chat-peer-orb">
+        {% if connection.identities_revealed %}{{ other.display_name|first }}{% else %}?{% endif %}
       </span>
+      <div class="chat-peer-copy">
+        <strong>
+          {% if connection.identities_revealed %}
+            {{ other.display_name }}
+            <span class="chat-peer-email">{{ other.email }}</span>
+          {% else %}Anonymous connection{% endif %}
+        </strong>
+        <span>
+          {% if connection.status == "active" %}Private text conversation
+          {% else %}This connection has ended{% endif %}
+        </span>
+      </div>
     </div>
     <details class="menu">
       <summary aria-label="Conversation options">•••</summary>
@@ -163,8 +168,27 @@
     {# data-msg-id lets the JS deduplication skip already-rendered messages #}
     {% for item in chat_messages %}
       <div class="bubble-row {% if item.sender == user %}mine{% endif %}"
-           data-msg-id="{{ item.pk }}">
-        <div class="bubble">{{ item.body }}<time>{{ item.created_at|date:"g:i A" }}</time></div>
+           data-msg-id="{{ item.pk }}"
+           data-reply-body="{{ item.get_body|truncatechars:120|escape }}">
+        <div class="bubble">
+          {% if item.reply_to %}
+            <button class="reply-context"
+                    type="button"
+                    data-jump-to="{{ item.reply_to_id }}">
+              <span>Replying to {% if item.reply_to.sender == user %}you{% else %}them{% endif %}</span>
+              <em>{{ item.reply_to.get_body|truncatechars:90 }}</em>
+            </button>
+          {% endif %}
+          <span class="bubble-text">{{ item.get_body }}</span>
+          <button class="bubble-reply"
+                  type="button"
+                  data-reply-id="{{ item.pk }}"
+                  data-reply-mine="{% if item.sender == user %}true{% else %}false{% endif %}"
+                  data-reply-body="{{ item.get_body|truncatechars:120|escape }}">
+            Reply
+          </button>
+          <time>{{ item.created_at|date:"g:i A" }}</time>
+        </div>
       </div>
     {% endfor %}
   </div>
@@ -178,11 +202,26 @@
           <button class="reveal-button" type="submit">Request identity reveal</button>
         </form>
       {% endif %}
+      <div class="reply-preview" id="reply-preview" hidden>
+        <div>
+          <span>Replying to message</span>
+          <strong id="reply-preview-text"></strong>
+        </div>
+        <button type="button" id="clear-reply" aria-label="Cancel reply">×</button>
+      </div>
       <form method="post"
             action="{% url 'send_message' connection.pk %}"
             class="composer"
             id="send-form">
         {% csrf_token %}
+        {{ form.reply_to }}
+        <div class="emoji-row" aria-label="Quick emojis">
+          <button type="button" data-emoji="❤️">❤️</button>
+          <button type="button" data-emoji="😂">😂</button>
+          <button type="button" data-emoji="😊">😊</button>
+          <button type="button" data-emoji="🔥">🔥</button>
+          <button type="button" data-emoji="✨">✨</button>
+        </div>
         {{ form.body }}
         <button type="submit" id="send-btn" aria-label="Send message">Send</button>
       </form>
@@ -311,6 +350,10 @@
   const composerWrap = document.getElementById('composer-wrap');
   const cdEl        = document.getElementById('countdown');
   const textarea    = sendForm ? sendForm.querySelector('textarea') : null;
+  const replyInput  = sendForm ? sendForm.querySelector('input[name="reply_to"]') : null;
+  const replyPreview = document.getElementById('reply-preview');
+  const replyPreviewText = document.getElementById('reply-preview-text');
+  const clearReplyBtn = document.getElementById('clear-reply');
 
   /* ── STATE ──────────────────────────────────────────────────────────────── */
   let lastId = list ? (parseInt(list.dataset.last, 10) || 0) : 0;
@@ -348,14 +391,44 @@
   }
 
   /* ── BUBBLE FACTORY ─────────────────────────────────────────────────────── */
-  function makeBubble(body, isMine, timeStr, msgId) {
+  function makeBubble(body, isMine, timeStr, msgId, reply) {
     const row = document.createElement('div');
     row.className = 'bubble-row' + (isMine ? ' mine' : '');
     if (msgId != null) row.dataset.msgId = String(msgId);
+    row.dataset.replyBody = body.slice(0, 120);
 
     const bub = document.createElement('div');
     bub.className = 'bubble';
-    bub.appendChild(document.createTextNode(body));
+    if (reply && reply.id) {
+      const context = document.createElement('button');
+      context.type = 'button';
+      context.className = 'reply-context';
+      context.dataset.jumpTo = String(reply.id);
+
+      const label = document.createElement('span');
+      label.textContent = 'Replying to ' + (reply.mine ? 'you' : 'them');
+      const excerpt = document.createElement('em');
+      excerpt.textContent = reply.body || 'Message';
+      context.appendChild(label);
+      context.appendChild(excerpt);
+      bub.appendChild(context);
+    }
+
+    const text = document.createElement('span');
+    text.className = 'bubble-text';
+    text.textContent = body;
+    bub.appendChild(text);
+
+    if (msgId != null) {
+      const replyBtn = document.createElement('button');
+      replyBtn.type = 'button';
+      replyBtn.className = 'bubble-reply';
+      replyBtn.dataset.replyId = String(msgId);
+      replyBtn.dataset.replyMine = isMine ? 'true' : 'false';
+      replyBtn.dataset.replyBody = body.slice(0, 120);
+      replyBtn.textContent = 'Reply';
+      bub.appendChild(replyBtn);
+    }
 
     const t = document.createElement('time');
     t.textContent = timeStr || new Date().toLocaleTimeString('en-US', {
@@ -396,7 +469,7 @@
         });
         data.messages.forEach(function (m) {
           if (list.querySelector('[data-msg-id="' + m.id + '"]')) return;
-          const row = makeBubble(m.body, m.mine, m.time, m.id);
+          const row = makeBubble(m.body, m.mine, m.time, m.id, m.reply);
           list.appendChild(row);
           if (m.id > lastId) lastId = m.id;
           scrollBottom();
@@ -440,6 +513,68 @@
 
   /* ── OPTIMISTIC SEND ────────────────────────────────────────────────────── */
   if (sendForm && textarea) {
+    let replyMine = false;
+
+    function setReply(id, body, isMine) {
+      if (!replyInput || !replyPreview || !replyPreviewText) return;
+      replyInput.value = id || '';
+      replyMine = Boolean(isMine);
+      replyPreviewText.textContent = body || 'Message';
+      replyPreview.hidden = false;
+      textarea.focus();
+    }
+
+    function clearReply() {
+      if (replyInput) replyInput.value = '';
+      replyMine = false;
+      if (replyPreview) replyPreview.hidden = true;
+      if (replyPreviewText) replyPreviewText.textContent = '';
+    }
+
+    function currentReply() {
+      if (!replyInput || !replyInput.value) return null;
+      return {
+        id: replyInput.value,
+        body: replyPreviewText ? replyPreviewText.textContent : 'Message',
+        mine: replyMine
+      };
+    }
+
+    if (clearReplyBtn) clearReplyBtn.addEventListener('click', clearReply);
+
+    document.addEventListener('click', function (e) {
+      const replyButton = e.target.closest('[data-reply-id]');
+      if (replyButton && replyButton.dataset.replyId) {
+        setReply(
+          replyButton.dataset.replyId,
+          replyButton.dataset.replyBody,
+          replyButton.dataset.replyMine === 'true'
+        );
+        return;
+      }
+
+      const jumpButton = e.target.closest('[data-jump-to]');
+      if (jumpButton && list) {
+        const target = list.querySelector('[data-msg-id="' + jumpButton.dataset.jumpTo + '"]');
+        if (target) {
+          target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          target.classList.add('reply-highlight');
+          setTimeout(function () { target.classList.remove('reply-highlight'); }, 1400);
+        }
+      }
+    });
+
+    document.querySelectorAll('[data-emoji]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        const emoji = btn.dataset.emoji || '';
+        const start = textarea.selectionStart || textarea.value.length;
+        const end = textarea.selectionEnd || textarea.value.length;
+        textarea.value = textarea.value.slice(0, start) + emoji + textarea.value.slice(end);
+        textarea.selectionStart = textarea.selectionEnd = start + emoji.length;
+        textarea.focus();
+        textarea.dispatchEvent(new Event('input', { bubbles: true }));
+      });
+    });
 
     // Auto-resize textarea
     function resize() {
@@ -466,9 +601,10 @@
 
       const body = textarea.value.trim();
       if (!body) return;
+      const replyMeta = currentReply();
 
       // 1. Show message immediately (optimistic)
-      const optimistic = makeBubble(body, true);
+      const optimistic = makeBubble(body, true, null, null, replyMeta);
       optimistic.dataset.optimistic = '1';
       list.appendChild(optimistic);
       scrollBottom(true);
@@ -483,6 +619,8 @@
       try {
         const fd = new FormData(sendForm);
         fd.set('body', body); // use the captured value, not the cleared field
+        if (replyMeta && replyMeta.id) fd.set('reply_to', replyMeta.id);
+        else fd.delete('reply_to');
         const res = await fetch(sendForm.action, {
           method: 'POST',
           body: fd,
@@ -491,6 +629,7 @@
         });
 
         if (!res.ok) throw new Error('Send failed');
+        clearReply();
 
         // Poll immediately to get the real message ID and replace the optimistic bubble
         schedulePoll(300);

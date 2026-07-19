@@ -40,6 +40,7 @@ class MessageForm(StyledFormMixin, forms.Form):
         label="",
         widget=forms.Textarea(attrs={"rows": 2, "placeholder": "Write a message..."}),
     )
+    reply_to = forms.IntegerField(required=False, widget=forms.HiddenInput)
 
 
 class ReportForm(StyledFormMixin, forms.ModelForm):

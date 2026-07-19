@@ -1,5 +1,6 @@
 from datetime import timedelta
 
+from django.conf import settings
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import transaction
 from django.db.models import Count, Q
@@ -47,6 +48,8 @@ def _eligible_candidates(requester, now):
     # Photo is optional for both genders — no photo_status gate in matching.
 
     candidates = User.objects.filter(**base_filters).exclude(pk=requester.pk)
+    if getattr(settings, "ENABLE_AUTOPAUSE_FEATURE", True):
+        candidates = candidates.filter(last_active_at__gte=now - timedelta(days=45))
     candidates = candidates.annotate(
         active_total=Count(
             "connections_as_woman" if opposite == User.Gender.WOMAN else "connections_as_man",
