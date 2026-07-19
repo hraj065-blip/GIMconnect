@@ -204,6 +204,11 @@
               {% endif %}
             {% else %}
               {{ connection.anonymous_display_name }}
+              {% if connection.current_other_user.mockup_fun_name %}
+                <span style="display:block;font-size:12px;color:var(--muted);font-weight:normal;margin-top:2px;">
+                  Alias: {{ connection.current_other_user.mockup_fun_name }}
+                </span>
+              {% endif %}
             {% endif %}
           </strong>
           <p>
