@@ -161,6 +161,20 @@
         </div>
       {% endif %}
     </div>
+    {% if not user.mockup_fun_name %}
+      <div class="photo-soft-hint alias-hint">
+        <span class="hint-icon" aria-hidden="true">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="12" cy="7" r="4" stroke="currentColor" stroke-width="1.7"/>
+          </svg>
+        </span>
+        <div>
+          <strong>Give yourself a fun alias — optional</strong>
+          <p>Pick a playful name and write a short bio so your match gets a sense of you before any photos are shared. <a href="{% url 'settings' %}">Set it in Settings</a>.</p>
+        </div>
+      </div>
+    {% endif %}
     {% if not user.photo %}
       <div class="photo-soft-hint">
         <span class="hint-icon" aria-hidden="true">
@@ -205,8 +219,8 @@
             {% else %}
               {{ connection.anonymous_display_name }}
               {% if connection.current_other_user.mockup_fun_name %}
-                <span style="display:block;font-size:12px;color:var(--muted);font-weight:normal;margin-top:2px;">
-                  Alias: {{ connection.current_other_user.mockup_fun_name }}
+                <span style="display:block;font-size:12px;color:var(--rose,#c96b8a);font-weight:600;margin-top:2px;letter-spacing:.1px;">
+                  {{ connection.current_other_user.mockup_fun_name }}
                 </span>
               {% endif %}
             {% endif %}
@@ -216,6 +230,8 @@
               {{ connection.last_message_body|truncatechars:52 }}
             {% elif connection.anonymous_intro %}
               {{ connection.anonymous_intro|truncatewords:18 }}
+            {% elif connection.current_other_user.mockup_bio %}
+              {{ connection.current_other_user.mockup_bio|truncatechars:72 }}
             {% else %}
               A fresh conversation is waiting.
             {% endif %}
@@ -272,6 +288,8 @@
   .photo-soft-hint strong { display:block;font-size:13px;font-weight:600;margin-bottom:4px; }
   .photo-soft-hint p { margin:0;font-size:12.5px;color:var(--muted);line-height:1.6; }
   .photo-soft-hint a { color:var(--pine);font-weight:600;text-underline-offset:3px; }
+  .alias-hint { margin-bottom:12px; }
+  .alias-hint .hint-icon { background:rgba(201,107,138,.10);color:var(--rose,#c96b8a); }
   .status-pill.paused { background:rgba(192,88,120,.10);color:var(--rose); }
   .availability-row { display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px 22px;margin-bottom:16px;border:1px solid var(--line);border-radius:18px;background:var(--paper);transition:background .22s ease,border-color .22s ease; }
   .availability-row.paused { background:var(--pink-soft,#fdeef5);border-color:rgba(192,88,120,.22); }
