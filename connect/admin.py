@@ -9,11 +9,11 @@ from .models import (
 @admin.register(User)
 class UserAdmin(admin.ModelAdmin):
     # Determine what columns show up on the main user list
-    list_display = ('email', 'display_name', 'gender', 'photo_status', 'photo_preview', 'quick_actions')
+    list_display = ('email', 'display_name', 'mockup_fun_name', 'gender', 'photo_status', 'photo_preview', 'quick_actions')
     
     # Adds a filter sidebar to instantly see "Pending" users
     list_filter = ('photo_status', 'email_verified', 'gender')
-    search_fields = ('email', 'display_name')
+    search_fields = ('email', 'display_name', 'mockup_fun_name', 'anonymous_intro')
     ordering = ('-date_joined',)
 
     def photo_preview(self, obj):

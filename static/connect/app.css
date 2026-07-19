@@ -708,7 +708,7 @@ button {
 
 .feature-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 18px;
 }
 
@@ -745,6 +745,33 @@ button {
   transform: translateY(-6px);
   border-color: rgba(199, 122, 61, .30);
   box-shadow: var(--shadow);
+}
+
+.feature-glyph {
+  width: 54px;
+  height: 54px;
+  display: grid;
+  place-items: center;
+  margin-bottom: auto;
+  align-self: flex-start;
+  border-radius: 18px;
+  background: var(--ember-soft);
+  color: var(--ember-dark);
+}
+
+.glyph-persona {
+  background: var(--rose-soft);
+  color: var(--rose-deep);
+}
+
+.glyph-chat {
+  background: var(--pine-soft);
+  color: var(--pine);
+}
+
+.glyph-reveal {
+  background: var(--pink-soft);
+  color: var(--rose-deep);
 }
 
 .feature-num {
@@ -910,7 +937,7 @@ button {
   max-width: 1180px;
   margin: 0 auto;
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 18px;
 }
 
@@ -2028,7 +2055,8 @@ button {
 }
 
 .identity-banner,
-.reveal-panel {
+.reveal-panel,
+.anonymous-persona-card {
   margin: 14px;
   padding: 16px;
   display: flex;
@@ -2038,6 +2066,36 @@ button {
   border: 1px solid rgba(28, 80, 63, .18);
   border-radius: 18px;
   background: var(--pine-soft);
+}
+
+.anonymous-persona-card {
+  display: block;
+  background:
+    radial-gradient(circle at 100% 0%, rgba(201, 107, 138, .12), transparent 32%),
+    linear-gradient(135deg, rgba(255, 253, 248, .92), rgba(247, 229, 209, .70));
+  border-color: rgba(199, 122, 61, .18);
+  box-shadow: 0 14px 38px rgba(143, 77, 35, .08);
+}
+
+.anonymous-persona-card strong {
+  display: block;
+  margin-top: 4px;
+  color: var(--ink);
+  font-size: 18px;
+  letter-spacing: -.4px;
+}
+
+.anonymous-persona-card p {
+  margin: 8px 0 10px;
+  color: var(--ink-soft);
+  font-size: 13.5px;
+  line-height: 1.55;
+}
+
+.anonymous-persona-card small {
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.4;
 }
 
 .identity-banner img {
@@ -2385,6 +2443,28 @@ button {
   color: var(--muted);
   text-align: center;
   font-size: 12px;
+}
+
+.settings-note {
+  margin-bottom: 20px;
+  padding: 16px 18px;
+  border: 1px solid rgba(199, 122, 61, .18);
+  border-radius: 18px;
+  background: rgba(247, 229, 209, .45);
+}
+
+.settings-note strong {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--ink);
+  font-size: 14px;
+}
+
+.settings-note p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12.5px;
+  line-height: 1.6;
 }
 
 /* ─────────────────────────── TOASTS ─────────────────────────────── */

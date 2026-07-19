@@ -64,6 +64,15 @@ class User(AbstractUser):
     username = None
     email = models.EmailField(unique=True)
     display_name = models.CharField(max_length=80)
+    mockup_fun_name = models.CharField(
+        max_length=48,
+        blank=True,
+        help_text="Optional anonymous display name shown before identity reveal.",
+    )
+    anonymous_intro = models.TextField(
+        blank=True,
+        help_text="Optional short anonymous intro shown before identity reveal. Maximum 60 words.",
+    )
     gender = models.CharField(max_length=1, choices=Gender.choices)
     photo = models.ImageField(upload_to="verification_photos/%Y/%m/", blank=True)
     email_verified = models.BooleanField(default=False)
@@ -136,6 +145,10 @@ class User(AbstractUser):
     def active_connections(self):
         lookup = Q(man=self) if self.gender == self.Gender.MAN else Q(woman=self)
         return Connection.objects.filter(lookup, status=Connection.Status.ACTIVE)
+
+    @property
+    def anonymous_display_name(self):
+        return self.mockup_fun_name.strip() or "Anonymous connection"
 
 
 class EmailOTP(models.Model):

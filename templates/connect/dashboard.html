@@ -188,6 +188,8 @@
           {% if connection.identities_revealed %}
             {% if user == connection.man %}{{ connection.woman.display_name|first }}
             {% else %}{{ connection.man.display_name|first }}{% endif %}
+          {% elif connection.current_other_user.mockup_fun_name %}
+            {{ connection.anonymous_display_name|first }}
           {% else %}?{% endif %}
         </div>
         <div class="connection-card-body">
@@ -201,10 +203,18 @@
                 <span style="display:block;font-size:12px;color:var(--muted);font-weight:normal;margin-top:2px;text-transform:lowercase;">{{ connection.man.email }}</span>
               {% endif %}
             {% else %}
-              Anonymous connection
+              {{ connection.anonymous_display_name }}
             {% endif %}
           </strong>
-          <p>{{ connection.last_message_body|default:"A fresh conversation is waiting."|truncatechars:52 }}</p>
+          <p>
+            {% if connection.last_message_body %}
+              {{ connection.last_message_body|truncatechars:52 }}
+            {% elif connection.anonymous_intro %}
+              {{ connection.anonymous_intro|truncatewords:18 }}
+            {% else %}
+              A fresh conversation is waiting.
+            {% endif %}
+          </p>
         </div>
         <div class="connection-card-right">
           <span class="expires-badge {% if connection.expires_in_urgent %}expires-urgent{% endif %}">

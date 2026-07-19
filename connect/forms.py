@@ -53,11 +53,30 @@ class ReportForm(StyledFormMixin, forms.ModelForm):
 class SettingsForm(forms.ModelForm):
     class Meta:
         model = User
-        # Ensure 'photo' is included in this list!
-        fields = ['display_name', 'photo']
+        fields = ["display_name", "mockup_fun_name", "anonymous_intro", "photo"]
+        labels = {
+            "mockup_fun_name": "Mockup fun name",
+            "anonymous_intro": "Anonymous intro",
+        }
+        help_texts = {
+            "mockup_fun_name": "Optional. Shown before identity reveal. Disrespectful names can be reported.",
+            "anonymous_intro": "Optional. Maximum 60 words. Shown only to active anonymous connections before reveal.",
+        }
+        widgets = {
+            "anonymous_intro": forms.Textarea(attrs={"rows": 4, "placeholder": "A tiny anonymous intro, if you want one."}),
+        }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["photo"].widget.attrs.update({
             "accept": "image/*",
         })
+
+    def clean_mockup_fun_name(self):
+        return self.cleaned_data.get("mockup_fun_name", "").strip()
+
+    def clean_anonymous_intro(self):
+        value = self.cleaned_data.get("anonymous_intro", "").strip()
+        if len(value.split()) > 60:
+            raise forms.ValidationError("Keep your anonymous intro to 60 words or fewer.")
+        return value

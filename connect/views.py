@@ -278,6 +278,10 @@ def dashboard(request):
     now = timezone.now()
     active = []
     for conn in active_qs:
+        other = conn.other_user(request.user)
+        conn.current_other_user = other
+        conn.anonymous_display_name = other.anonymous_display_name
+        conn.anonymous_intro = other.anonymous_intro.strip()
         delta = conn.expires_at - now
         total_seconds = max(int(delta.total_seconds()), 0)
         total_hours = total_seconds // 3600
@@ -408,13 +412,16 @@ def chat(request, pk):
         # Reuse it so reveal.connection / reveal.connection.man/.woman in the
         # template don't trigger extra queries.
         reveal.connection = connection
+    other = connection.other_user(request.user)
 
     return render(
         request,
         "connect/chat.html",
         {
             "connection": connection,
-            "other": connection.other_user(request.user),
+            "other": other,
+            "anonymous_display_name": other.anonymous_display_name,
+            "anonymous_intro": other.anonymous_intro.strip(),
             "chat_messages": (
                 connection.chat_messages
                 .select_related("sender", "reply_to", "reply_to__sender")

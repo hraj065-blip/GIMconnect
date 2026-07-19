@@ -9,17 +9,23 @@
     <a class="back-link" href="{% url 'dashboard' %}">‹ Connections</a>
     <div class="chat-peer">
       <span class="chat-peer-orb">
-        {% if connection.identities_revealed %}{{ other.display_name|first }}{% else %}?{% endif %}
+        {% if connection.identities_revealed %}
+          {{ other.display_name|first }}
+        {% elif other.mockup_fun_name %}
+          {{ anonymous_display_name|first }}
+        {% else %}?{% endif %}
       </span>
       <div class="chat-peer-copy">
         <strong>
           {% if connection.identities_revealed %}
             {{ other.display_name }}
             <span class="chat-peer-email">{{ other.email }}</span>
-          {% else %}Anonymous connection{% endif %}
+          {% else %}{{ anonymous_display_name }}{% endif %}
         </strong>
         <span>
-          {% if connection.status == "active" %}Private text conversation
+          {% if connection.status == "active" and not connection.identities_revealed and anonymous_intro %}
+            Anonymous intro shared
+          {% elif connection.status == "active" %}Private text conversation
           {% else %}This connection has ended{% endif %}
         </span>
       </div>
@@ -142,6 +148,15 @@
         </div>
       {% endif %}
 
+    </div>
+  {% endif %}
+
+  {% if not connection.identities_revealed and anonymous_intro %}
+    <div class="anonymous-persona-card">
+      <span class="eyebrow">Before reveal</span>
+      <strong>{{ anonymous_display_name }}</strong>
+      <p>{{ anonymous_intro }}</p>
+      <small>Names and photos stay hidden until the mutual reveal flow completes.</small>
     </div>
   {% endif %}
 
