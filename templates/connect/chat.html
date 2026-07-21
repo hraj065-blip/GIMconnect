@@ -5,7 +5,7 @@
 <section class="chat-shell">
 
   {# ── HEADER ─────────────────────────────────────────────────────────────── #}
-  <header class="chat-header">
+  <header class="chat-header" style="position: relative; z-index: 40;">
     <a class="back-link" href="{% url 'dashboard' %}">‹ Connections</a>
     <div class="chat-peer">
       <span class="chat-peer-orb">
@@ -22,9 +22,6 @@
             <span class="chat-peer-email">{{ other.email }}</span>
           {% else %}
             {{ anonymous_display_name }}
-            {% if other.mockup_fun_name %}
-              <span class="chat-peer-email" style="text-transform:none;">Alias: {{ other.mockup_fun_name }}</span>
-            {% endif %}
           {% endif %}
         </strong>
         <span>
@@ -155,29 +152,23 @@
     </div>
   {% endif %}
 
-  {% if not connection.identities_revealed and anonymous_intro %}
-    <div class="anonymous-persona-card">
-      <span class="eyebrow">Before reveal</span>
-      <strong>{{ anonymous_display_name }}</strong>
-      <p>{{ anonymous_intro }}</p>
-      <small>Names and photos stay hidden until the mutual reveal flow completes.</small>
-    </div>
-  {% endif %}
-
   {# ── MESSAGES ────────────────────────────────────────────────────────────── #}
- {% comment %}
-    data-last     : highest message PK the page was rendered with; JS polls from here
-    data-url      : JSON endpoint for incremental message fetch
-    data-cstatus  : connection status at render time; client detects changes and reloads
-    data-reveal   : active reveal status at render time (or "none"); same purpose
-    data-revealed : whether identities were already revealed at render time
-  {% endcomment %}
   <div class="messages" id="messages"
        data-last="{% if chat_messages %}{{ chat_messages.last.pk }}{% else %}0{% endif %}"
        data-url="{% url 'messages_json' connection.pk %}"
        data-cstatus="{{ connection.status }}"
        data-reveal="{{ reveal.status|default:'none' }}"
        data-revealed="{{ connection.identities_revealed|yesno:'true,false' }}">
+
+    {# 👉 MOVED BIO CARD HERE SO IT SCROLLS WITH THE CHAT 👈 #}
+    {% if not connection.identities_revealed and anonymous_intro %}
+      <div class="anonymous-persona-card" style="margin: 0 0 24px 0; box-shadow: 0 10px 26px rgba(143, 77, 35, .06);">
+        <span class="eyebrow">Before reveal</span>
+        <strong>{{ anonymous_display_name }}</strong>
+        <p>{{ anonymous_intro }}</p>
+        <small>Names and photos stay hidden until the mutual reveal flow completes.</small>
+      </div>
+    {% endif %}
 
     <div class="conversation-start">
       <span>Anonymous connection opened</span>
