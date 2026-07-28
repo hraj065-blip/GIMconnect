@@ -7,6 +7,7 @@ All HTTP view logic for the connect app.
 import json
 import logging
 import time
+from datetime import timedelta
 from functools import wraps
 
 from django.conf import settings
@@ -66,6 +67,19 @@ def _maybe_process_timers():
         except Exception:
             logger.exception("process_timers() raised an unexpected error")
         cache.set(lock_key, time.monotonic(), timeout=_TIMER_THROTTLE_SECONDS)
+
+
+_LAST_ACTIVE_THROTTLE = timedelta(minutes=5)
+
+
+def _touch_last_active(user):
+    """Update last_active_at so the 45-day auto-pause (services.process_timers)
+    and is_eligible's inactivity gate are accurate. Throttled to once every 5
+    minutes per user to save DB writes on every request."""
+    now = timezone.now()
+    if user.last_active_at < now - _LAST_ACTIVE_THROTTLE:
+        user.last_active_at = now
+        user.save(update_fields=["last_active_at"])
 
 
 def _get_connection_for_user(request, pk, *, allow_ended=False, select_related=True):
@@ -256,6 +270,7 @@ def onboarding(request):
 @login_required
 def dashboard(request):
     _maybe_process_timers()
+    _touch_last_active(request.user)
 
     # ── NEW: Catch photo uploads directly from the dashboard ──
     if request.method == "POST" and "photo" in request.FILES:
@@ -394,6 +409,7 @@ def cancel_waiting_request(request, pk):
 @login_required
 def chat(request, pk):
     _maybe_process_timers()
+    _touch_last_active(request.user)
 
     connection = _get_connection_for_user(request, pk, allow_ended=True)
 
