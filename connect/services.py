@@ -3,7 +3,7 @@ from datetime import timedelta
 from django.conf import settings
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import transaction
-from django.db.models import Count, Q
+from django.db.models import Count, F, Q
 from django.utils import timezone
 
 from .models import Block, Connection, ConnectionRequest, Report, RevealRequest, User
@@ -215,12 +215,33 @@ def process_timers(now=None):
     expired_request_count = expired_requests.update(
         status=ConnectionRequest.Status.EXPIRED, ended_at=now
     )
-    # ── REMOVED: connection lifetime auto-expiry ─────────────────────────────
-    # Connections used to be force-closed to EXPIRED once Connection.expires_at
-    # passed, even if both users were actively chatting. A connection should
-    # only end when a user explicitly ends it (end_connection) or blocks the
-    # other person. The Connection.expires_at field is still written on
-    # creation (establish_connection) but is no longer read or acted on here.
+
+    # ── FIX: connection lifetime auto-expiry ─────────────────────────────────
+    # Connections must actually close on the backend once expires_at (7 days
+    # after establishment) passes — the frontend countdown alone doesn't end
+    # anything. ended_at is set to expires_at via F(), not `now`: this job only
+    # runs opportunistically off page loads (_maybe_process_timers, throttled
+    # to once/60s), so `now` can lag the real expiry moment by anywhere from
+    # seconds to hours depending on when someone next opens the app. expires_at
+    # is the timestamp the connection was actually scheduled to end, so
+    # ended_at — and anything that reads it, like the 7-day rematch cooldown in
+    # _recently_connected — stays accurate regardless of when this runs.
+    Connection.objects.filter(
+        status=Connection.Status.ACTIVE, expires_at__lte=now
+    ).update(status=Connection.Status.EXPIRED, ended_at=F("expires_at"))
+
+    # ── FIX: actively pause accounts inactive for > 45 days ──────────────────
+    # is_eligible and _eligible_candidates already read last_active_at to keep
+    # stale users out of the matching pool, but nothing ever flipped
+    # is_available to False on the account itself, so a dormant user's own
+    # dashboard would still show them as "available" indefinitely. This makes
+    # the pause explicit and persisted.
+    if getattr(settings, "ENABLE_AUTOPAUSE_FEATURE", True):
+        inactive_before = now - timedelta(days=45)
+        User.objects.filter(
+            is_available=True, last_active_at__lt=inactive_before
+        ).update(is_available=False)
+
     for reveal in RevealRequest.objects.filter(
         status=RevealRequest.Status.WINDOW_OPEN,
         window_expires_at__lte=now,
