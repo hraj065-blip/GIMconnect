@@ -26,7 +26,7 @@
         </strong>
         <span>
           {% if connection.status == "active" and not connection.identities_revealed and anonymous_intro %}
-            Anonymous intro shared
+            <button type="button" class="bio-tab" id="bio-tab-btn" aria-haspopup="dialog">View bio</button>
           {% elif connection.status == "active" %}Private text conversation
           {% else %}This connection has ended{% endif %}
         </span>
@@ -124,6 +124,7 @@
                     data-expires="{{ reveal.window_expires_at|date:'c' }}">3:00</span>
               to decide
             </strong>
+            <div class="photo-review-email">{{ connection.man.email }}</div>
             <p>
               Confirm to reveal both identities, or keep anonymous.
               If you take no action the reveal confirms automatically.
@@ -247,6 +248,17 @@
     <img id="lightbox-img" class="lightbox-img" src="" alt="Enlarged photo">
   </div>
 
+  {% if not connection.identities_revealed and anonymous_intro %}
+    <div id="bio-modal" class="lightbox-overlay" hidden role="dialog" aria-modal="true" aria-label="Bio">
+      <div class="bio-modal-card">
+        <button class="lightbox-close" id="bio-modal-close" aria-label="Close bio">✕</button>
+        <span class="eyebrow">About {{ anonymous_display_name }}</span>
+        <p>{{ anonymous_intro }}</p>
+        <small>Names and photos stay hidden until the mutual reveal flow completes.</small>
+      </div>
+    </div>
+  {% endif %}
+
 </section>
 {% endblock %}
 
@@ -333,6 +345,73 @@
     transition: background .2s ease;
   }
   .lightbox-close:hover { background: rgba(255,255,255,.2); }
+
+  /* ── Bio tab (header) ────────────────────────────────────────── */
+  .bio-tab {
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+  .bio-tab:hover { opacity: .75; }
+
+  /* ── Bio modal card ──────────────────────────────────────────── */
+  .bio-modal-card {
+    position: relative;
+    max-width: 420px;
+    width: 100%;
+    background: var(--cream, #fdf8f0);
+    color: var(--ink, #2b241c);
+    border-radius: 20px;
+    padding: 28px 24px 24px;
+    box-shadow: 0 30px 80px rgba(0,0,0,.35);
+    transform: scale(.95);
+    transition: transform .25s ease;
+  }
+  .lightbox-overlay.active .bio-modal-card {
+    transform: scale(1);
+  }
+  .bio-modal-card .eyebrow {
+    display: block;
+    margin-bottom: 10px;
+  }
+  .bio-modal-card p {
+    font-size: 15px;
+    line-height: 1.55;
+    margin: 0 0 12px;
+    white-space: pre-wrap;
+  }
+  .bio-modal-card small {
+    display: block;
+    opacity: .65;
+    font-size: 12px;
+  }
+  .bio-modal-card .lightbox-close {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 32px;
+    height: 32px;
+    font-size: 15px;
+    background: rgba(0,0,0,.08);
+    color: inherit;
+  }
+  .bio-modal-card .lightbox-close:hover { background: rgba(0,0,0,.16); }
+
+  /* ── Email shown during the 3-minute photo review window ───────── */
+  .photo-review-email {
+    font-size: 13px;
+    color: var(--pine);
+    font-weight: 600;
+    opacity: .85;
+    margin: 2px 0 6px;
+    text-transform: lowercase;
+  }
 </style>
 
 <script>
@@ -717,6 +796,31 @@
     });
     document.addEventListener('keydown', function(e) {
       if (e.key === 'Escape' && !lightbox.hidden) closeLightbox();
+    });
+  }
+
+  /* ── BIO MODAL LOGIC ─────────────────────────────────────────────────────── */
+  const bioModal = document.getElementById('bio-modal');
+  const bioTabBtn = document.getElementById('bio-tab-btn');
+  const bioModalClose = document.getElementById('bio-modal-close');
+
+  if (bioModal && bioTabBtn) {
+    function openBioModal() {
+      bioModal.hidden = false;
+      setTimeout(function() { bioModal.classList.add('active'); }, 10);
+    }
+    function closeBioModal() {
+      bioModal.classList.remove('active');
+      setTimeout(function() { bioModal.hidden = true; }, 250);
+    }
+
+    bioTabBtn.addEventListener('click', openBioModal);
+    if (bioModalClose) bioModalClose.addEventListener('click', closeBioModal);
+    bioModal.addEventListener('click', function(e) {
+      if (e.target === bioModal) closeBioModal();
+    });
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape' && !bioModal.hidden) closeBioModal();
     });
   }
 
